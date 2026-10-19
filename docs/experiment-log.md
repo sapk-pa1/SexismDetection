@@ -128,3 +128,48 @@ Extended `.gitignore`:
 - Experiment-tracker folders, `.claude/settings.local.json`, build/coverage files, editor and OS files.
 
 Checked with a scratch git dir. Only code, configs, docs, notebooks and `results/` would be tracked. `.env`, `data/`, `outputs/` and `hf_cache/` are ignored. Open question: whether to commit `data/splits/cmsb_split_s42.csv` (ids and split only, and it can't be regenerated).
+
+## 2026-10-19 · src/model/llm.py: single-example HF inference (no GPU run)
+**What and why.** The user asked for a script that runs inference on a single data point, placed in `src/model/llm.py`. This is the first file in `src/`, created at the user's request. The module scores labels as Yes/No next-token log-probs (no free generation, per the research rules):
+- `load_hf_model(repo_id, revision)`: pinned revision, bf16. Falls back to `AutoModelForImageTextToText` for checkpoints with no causal-LM mapping (Ministral 3 / `mistral3` in transformers 5.20.1).
+- `score_label`: logs P(Yes), P(No), their mass, P(Yes)/mass and the top-k next tokens. Low mass marks a soft refusal; the threshold is still TODO (to be picked on dev).
+- `infer_single(model, tokenizer, id, text, labels)`: one record per post, keyed by ID, with one entry per label.
+
+**Check (local, CPU, tokenizer only).** Using the cached Gemma 4 E4B tokenizer (rev `ee0ef602…`), the prompt ends with `<|turn>model\n`, and all 5 Yes and 5 No variants are single tokens. Ruff passes. No model forward pass has been run.
+
+**Issues.** `notebooks/20_llm_logprob.ipynb` and `configs/llm_logprob.yaml` (logged above) are missing from disk. The run folder `20261019_exist_task_1_3_gemma4-e4b_logprob-zs-dev-n5_s42` is empty. The prompt wording in `llm.py` is new, not taken from that notebook. Label definitions are passed in by the caller. Qwen3.5 with thinking on can't be scored from the first token and needs a separate path (TODO).
+
+**Next steps.** Run one dev example on a Colab GPU and check the Yes/No mass. Then add a resumable loop that writes `predictions.jsonl`.
+
+## 2026-10-19 · src/: per-task OutputSchemas, prompt templates, LLM backends (no GPU run)
+**What and why.** At the user's request, split the single `src/model/llm.py` into a package. Each task now has its own output schema, which drives both backends. This replaces the generic one-label prompt from the entry above.
+- `src/schemas/`: one pydantic `OutputSchema` per task.
+  - `CmsbBinary`, `EdosTaskA`, `ExistTask11`: `sexist: bool`.
+  - `EdosTaskB`/`EdosTaskC`: a `Literal` over the classes.
+  - `ExistTask13`: 5 bools, with the official names as JSON keys.
+  - `Example`, `LabelScore` and `Prediction` are the JSONL records. `registry.check_against_config` fails if a schema's type, column or class order drifts from `configs/data_prep.yaml`.
+- `src/prompts/templates/{dataset}/{task}.yaml` plus `builder.py`. Each prediction stores the template's sha256.
+- `src/model/`:
+  - `logprob.py` (primary): Yes/No per label for binary/multilabel. For multiclass (EDOS B/C), one prompt with lettered options, scored over the option-letter tokens and argmaxed (user's choice).
+  - `generate.py` (fallback): JSON-constrained decoding from `schema.json_schema()`, using outlines' xgrammar backend and plain HF `generate`. The grammar starts after the prefill.
+  - `llm.infer_single(...) -> Prediction` is the entry point.
+- **Definitions.** EXIST is adapted from `EXIST2025_Annotation_guidelines_Tweets.pdf`. EDOS is from Kirk et al. 2023 (arXiv 2303.04222); several definitions were excerpted in our copy and are marked TODO. CMSB is adapted from Samory et al. 2021, Table 2 and Sec. 2.2 (arXiv 2004.12764).
+- **Pins** (00 install cell and `requirements.in`): pydantic 2.13.5, outlines 1.3.3, xgrammar 0.2.8 (packages approved by the user), plus transformers 5.20.1, the version already in use. pydantic 2.14.x was skipped because it is less than 2 weeks old.
+
+**Check (CPU; scratch scripts, not committed).**
+- `ruff check src` passes.
+- The registry matches the config, and a reversed EDOS B class order is caught.
+- With the Gemma 4 E4B tokenizer (rev `ee0ef602…`), every task's prompt ends at `<|turn>model\n`. Yes/No and the letters A–K are single tokens.
+- Schemas accept their own dump and reject an extra key or an empty object.
+- `Example`s were built from 3 dev rows per dataset (text not printed), and `Prediction` JSON round-trips.
+- Both backends ran end to end on a tiny random-weight Llama with the Gemma tokenizer; this checks the mechanics only. All 6 tasks gave a Prediction. In generation, EXIST 1.3 hit `max_new_tokens` and was stored as a parse error, as designed.
+
+**Issues / limits.**
+- Constrained decoding can't show a refusal, so the log-prob mass stays the refusal signal.
+- `pred` uses a provisional 0.5 cutoff on P(Yes)/mass until per-label thresholds are tuned on dev.
+- The xgrammar backend can't restrict JSON whitespace (`whitespace_pattern` is unsupported).
+- Option-order position bias isn't handled.
+- The EDOS B/C evaluation scope is still open.
+- The full prompt text is no longer stored per label; it is rebuilt from the template sha256 plus the example ID.
+
+**Next steps.** Fill in the excerpted EDOS definitions from the paper. Run 1 dev example per task with Gemma 4 E4B on Colab and check the Yes/No and option mass. Then add the resumable dev loop in a `2x` notebook.
