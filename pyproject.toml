@@ -13,6 +13,9 @@ dependencies = []
 [tool.setuptools.packages.find]
 include = ["src*"]
 
+[tool.setuptools.package-data]
+"src.prompts" = ["templates/**/*.yaml"]  # prompt templates ship with the code
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
