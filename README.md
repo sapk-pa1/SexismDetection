@@ -2,7 +2,7 @@
 
 Research code for a paper on sexism detection. The proposed model, **HEFT**, is built on **NeoBERT**. It is compared against vanilla NeoBERT, fine-tuned encoders and prompted LLMs on three English datasets.
 
-> **Status:** notebook experimentation. All code lives in `notebooks/`; there is no `src/` package yet. Results are not final. Target submission: mid-November 2026.
+> **Status:** notebook experimentation. Experiments live in `notebooks/`; shared LLM inference code (per-task output schemas, prompt templates, backends) is in `src/`. Results are not final. Target submission: mid-November 2026.
 
 **HEFT in one paragraph:** TODO.
 
@@ -41,6 +41,7 @@ data/
 
 ```
 notebooks/   experiment notebooks, run in order (see below)
+src/         schemas/ (per-task OutputSchemas, records), prompts/ (YAML templates), model/ (LLM backends)
 configs/     YAML settings loaded by notebooks
 docs/        experiment-log.md: dated record of every run and decision
 results/     small committed artefacts (data manifest; later, final tables and figures)
