@@ -1,0 +1,59 @@
+# Secrets (tokens come from Colab secrets or .env, never git)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+kaggle.json
+*service_account*.json
+*credentials*.json
+
+# Data, outputs, caches (results/ and configs/ stay committed)
+data/
+outputs/
+hf_cache/
+.hf_cache/
+wandb/
+mlruns/
+lightning_logs/
+
+# Model weights and checkpoints
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.gguf
+*.onnx
+*.h5
+
+# Claude Code: rules are shared, local settings are not
+.claude/settings.local.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Notebooks (outputs are stripped by nbstripout, not ignored)
+.ipynb_checkpoints/
+.virtual_documents/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+._*
+Thumbs.db

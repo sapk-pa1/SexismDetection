@@ -1,0 +1,134 @@
+{
+  "env": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "pyarrow": "26.0.0",
+    "python": "3.12.15",
+    "pyyaml": "6.0.3",
+    "scikit-learn": "1.9.1"
+  },
+  "languages": [
+    "en"
+  ],
+  "processed": {
+    "cmsb_dev": {
+      "content_sha256": "af75e8510c4f31d4eacf3a9eed596f69b4bb06ebccfa04df955554f512017e82",
+      "rows": 1363
+    },
+    "cmsb_test": {
+      "content_sha256": "92d104d32b7a7785cb37761a223a6147d1bcb661ae68533c14949824666dc65a",
+      "rows": 2725
+    },
+    "cmsb_train": {
+      "content_sha256": "6acddd6edd08c9b54d1d91cd303af427281f620c1818a7bcddd93c1e6ab866c1",
+      "rows": 9543
+    },
+    "edos_dev": {
+      "content_sha256": "2dda93e3d8cb8f544a05fc445ebc17b45d846b2afd743edfe1fe70f15006a933",
+      "rows": 2000
+    },
+    "edos_test": {
+      "content_sha256": "364f28a20288aac7d7c44f8d86c367ab1a0aae4a2a1761ae770a9be56a1414b4",
+      "rows": 4000
+    },
+    "edos_train": {
+      "content_sha256": "a0be07e192676f48d01e982f50ff46bc098bfb91e88a8e75d717b1b805775eb9",
+      "rows": 14000
+    },
+    "exist_dev": {
+      "content_sha256": "1120f88ca336be3be8135c5015d3b0eba611271ba13aa4dcf3562b852f2138a2",
+      "rows": 489
+    },
+    "exist_test": {
+      "content_sha256": "a882f967107ef5bb0a8f3eeb13450690c6b81ea741ed81fc355707da12b15623",
+      "rows": 978
+    },
+    "exist_train": {
+      "content_sha256": "44de3fc289499a7d9b27f6f0fba08e9d28afce8159b1e3c45f5cf941adc7fccf",
+      "rows": 3260
+    }
+  },
+  "raw": {
+    "cmsb_annotations": {
+      "bytes": 333976,
+      "path": "CMSB/sexism_annotations.csv",
+      "sha256": "0c504d3bf3bb475a560747ea1bfb849827c6ac3c0b40ac985bb23fc694bee109"
+    },
+    "cmsb_data": {
+      "bytes": 1628049,
+      "path": "CMSB/sexism_data.csv",
+      "sha256": "ff3b914b65f35bd399201ea29626e0f6f86f53125b3a29d4b137c7de00ffac40"
+    },
+    "cmsb_split": {
+      "bytes": 147023,
+      "path": "splits/cmsb_split_s42.csv",
+      "sha256": "7680236eced3e62bbc9a6a7cbe606760869421ad7e0178c0d096fc63ef0bc10b"
+    },
+    "edos_aggregated": {
+      "bytes": 3846925,
+      "path": "EDOS/edos_labelled_aggregated.csv",
+      "sha256": "607bdbb766e1803a28f0eb8fc21c14b6b9dfa20039f726ba6767438584b47f9b"
+    },
+    "edos_individual": {
+      "bytes": 11709448,
+      "path": "EDOS/edos_labelled_individual_annotations.csv",
+      "sha256": "15d430d6756f620b2e83dddd7a3a68dc3e939df3a4c417d184e3c431cc0e20b2"
+    },
+    "exist_dev": {
+      "bytes": 1429152,
+      "path": "EXIST/EXIST 2025 Tweets Dataset/dev/EXIST2025_dev.json",
+      "sha256": "1079f57d841b6b202d0692df810b677d57e7b57877d82aa4d8481e432dfcfa52"
+    },
+    "exist_dev_1_1_hard": {
+      "bytes": 66769,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_1_gold_hard.json",
+      "sha256": "32918b677b22bf05de1dbe42cd4d8a487124ae5501d26ffa963ca201eeed54fa"
+    },
+    "exist_dev_1_1_soft": {
+      "bytes": 126338,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_1_gold_soft.json",
+      "sha256": "a951679c696c07642af487a6a66177904676747ebf0b65f6a227ee1e153161be"
+    },
+    "exist_dev_1_3_hard": {
+      "bytes": 87899,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_3_gold_hard.json",
+      "sha256": "3d69d1ec3e52200fc4bfa5651278e364d24d99cefb50ba7a4686c218cf8bba28"
+    },
+    "exist_dev_1_3_soft": {
+      "bytes": 308254,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_3_gold_soft.json",
+      "sha256": "210efdca135d88a6620a68323530c3d12c2a607206735fa5419b37c32e712fd7"
+    },
+    "exist_test": {
+      "bytes": 2143912,
+      "path": "EXIST/EXIST 2025 Tweets Dataset/test/EXIST2025_test_clean.json",
+      "sha256": "3c86edefc842dfc505bf845be04d13543df2d0b7501118e1411b3c653a12ffa7"
+    },
+    "exist_train": {
+      "bytes": 9438886,
+      "path": "EXIST/EXIST 2025 Tweets Dataset/training/EXIST2025_training.json",
+      "sha256": "fc3760428e0aeea07a8c4df6749cfffa9d6f53ecae5e950d7a8203ce6d6be159"
+    },
+    "exist_train_1_1_hard": {
+      "bytes": 433241,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_1_gold_hard.json",
+      "sha256": "0451fb62f81cb030480676dbe33c4db29ce3c6ae0b1525d5e8c81a4036f459cc"
+    },
+    "exist_train_1_1_soft": {
+      "bytes": 843093,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_1_gold_soft.json",
+      "sha256": "91eef13a3ab0c607a055455fc6a647f649485a077da45b47d4da34843e702163"
+    },
+    "exist_train_1_3_hard": {
+      "bytes": 552662,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_3_gold_hard.json",
+      "sha256": "4593cae386c7f6ecd401de9b02ce01531cfbe6b481ec81d933aac7c7ac683cf5"
+    },
+    "exist_train_1_3_soft": {
+      "bytes": 2035830,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_3_gold_soft.json",
+      "sha256": "e857a36c8f14e1775d9680128a7d86df8c8b2085f46b0fe654eebb3a6a6aa8c1"
+    }
+  },
+  "written_by": "20261019-1557_all_prep_none_dataprep_s42"
+}

@@ -1,0 +1,31 @@
+dataset: all
+task: prep
+model: none
+method: dataprep
+seed: 42
+update_manifest: true # True for the first build, or when raw data or this pipeline changed on purpose
+
+languages: [en]  # EXIST only; CMSB and EDOS are English. Add es to keep Spanish
+cmsb_split_file: splits/cmsb_split_s42.csv  # frozen, never regenerated
+processed_dir: processed  # one subfolder per split
+manifest: results/data_manifest.json  # relative to PROJECT_ROOT; committed
+
+parquet:
+  compression: zstd
+  compression_level: 3  # set explicitly: the codec default can change between versions
+
+# Each dataset's own tasks; later notebooks read targets and class order from here
+tasks:
+  cmsb:
+    binary: {type: binary, column: sexist}
+  edos:
+    task_a: {type: binary, column: sexist}
+    # B and C: one class per sexist post, null for non-sexist. TODO: decide how B/C are evaluated (gold-sexist subset vs end to end)
+    task_b: {type: multiclass, column: category, classes: [threats, derogation, animosity, prejudiced_discussions]}
+    task_c: {type: multiclass, column: vector, classes: ["1.1", "1.2", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2"]}  # official vector codes
+  exist:
+    task_1_1: {type: binary, column: sexist}
+    task_1_3:
+      type: multilabel
+      column: labels
+      classes: [IDEOLOGICAL-INEQUALITY, STEREOTYPING-DOMINANCE, OBJECTIFICATION, SEXUAL-VIOLENCE, MISOGYNY-NON-SEXUAL-VIOLENCE]

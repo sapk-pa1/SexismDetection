@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heft-sexism"
+version = "0.1.0"
+description = "HEFT: multi-label sexism detection on NeoBERT"
+requires-python = ">=3.12,<3.13"
+# Dependencies are pinned in requirements.lock (compiled from requirements.in).
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+markers = [
+    "gpu: needs CUDA",
+    "slow: takes more than 30 s",
+    "network: needs internet access",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
