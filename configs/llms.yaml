@@ -119,14 +119,12 @@ models:
     gated: true  # automatic approval
     thinking: none
     vram_gb: 20
-  granite-guardian-3.3-8b:
-    repo_id: ibm-granite/granite-guardian-3.3-8b
-    revision: b3421eda4ba6fc9f9a71121d7e62de08827469a4
-    params: 8B
+  # Replaced granite-guardian-3.3-8b on 2026-10-20 (guard model; see docs/experiment-log.md)
+  jamba2-3b:
+    repo_id: ai21labs/AI21-Jamba2-3B
+    revision: 525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9
+    params: 3B  # Hub: 3.03B
     licence: apache-2.0
     gated: false
     thinking: none
-    vram_gb: 20
-    prefill: "<score>"  # its template does not add <score>; answers lowercase yes/no inside it
-    # Without guardian_config its template judges the built-in "harm" criterion, not our label
-    blocked: needs a guardian_config adapter (label definition as custom_criteria, post as user turn)
+    vram_gb: 10  # without mamba-ssm/causal-conv1d, transformers falls back to the PyTorch Mamba path
