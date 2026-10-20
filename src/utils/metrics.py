@@ -88,11 +88,15 @@ def compute_metrics(
         }
     elif schema.task_type == "multiclass":
         classes = schema.labels()
+        # EDOS B/C rows are already gold-sexist only; EXIST 1.2 drops tweets with no hard majority
+        ids = [i for i in ids if pd.notna(gold[i])]
         y = [str(gold[i]) for i in ids]
         raw = [preds[i][schema.column] for i in ids]
         yp = [UNANSWERED if p is None else p for p in raw]
         metrics |= {
-            "subset": "gold-sexist posts only",
+            "subset": "gold-sexist posts only"
+            if schema.dataset == "edos"
+            else "posts with a hard majority label",
             "n_scored": len(ids),
             "n_unanswered": sum(p is None for p in raw),
             "macro_f1": f1_score(y, yp, labels=classes, average="macro", zero_division=0),

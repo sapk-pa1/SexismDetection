@@ -10,6 +10,7 @@ from src.schemas.tasks import (
     EdosTaskB,
     EdosTaskC,
     ExistTask11,
+    ExistTask12,
     ExistTask13,
 )
 
@@ -22,6 +23,7 @@ __all__ = [
     "EdosTaskC",
     "Example",
     "ExistTask11",
+    "ExistTask12",
     "ExistTask13",
     "LabelScore",
     "OutputSchema",

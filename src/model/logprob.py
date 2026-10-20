@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 
-from src.prompts.builder import PromptTemplate, render
+from src.prompts.builder import ChatOptions, PromptTemplate, render
 from src.schemas.base import OutputSchema
 from src.schemas.records import LabelScore
 
@@ -49,9 +49,12 @@ def score_yes_no(
     label: str,
     top_k: int = 10,
     enable_thinking: bool = False,
+    chat: ChatOptions | None = None,
 ) -> LabelScore:
     """Score one label from the next-token Yes/No distribution."""
-    prompt = render(tokenizer, template.yes_no_messages(text, label), enable_thinking=enable_thinking)
+    prompt = render(
+        tokenizer, template.yes_no_messages(text, label), enable_thinking=enable_thinking, chat=chat
+    )
     probs = next_token_probs(model, tokenizer, prompt)
     p_yes = probs[answer_token_ids(tokenizer, YES_VARIANTS)].sum().item()
     p_no = probs[answer_token_ids(tokenizer, NO_VARIANTS)].sum().item()
@@ -75,9 +78,10 @@ def score_options(
     column: str,
     top_k: int = 10,
     enable_thinking: bool = False,
+    chat: ChatOptions | None = None,
 ) -> LabelScore:
     """Score a single-label task from the next-token distribution over option letters."""
-    prompt = render(tokenizer, template.option_messages(text), enable_thinking=enable_thinking)
+    prompt = render(tokenizer, template.option_messages(text), enable_thinking=enable_thinking, chat=chat)
     probs = next_token_probs(model, tokenizer, prompt)
     class_probs = {
         cls: probs[answer_token_ids(tokenizer, (letter, f" {letter}"))].sum().item()
@@ -103,11 +107,12 @@ def score_example(
     text: str,
     top_k: int = 10,
     enable_thinking: bool = False,
+    chat: ChatOptions | None = None,
 ) -> list[LabelScore]:
     """All scores for one post: one per label (binary, multilabel) or one (multiclass)."""
     if schema.task_type == "multiclass":
-        return [score_options(model, tokenizer, template, text, schema.column, top_k, enable_thinking)]
+        return [score_options(model, tokenizer, template, text, schema.column, top_k, enable_thinking, chat)]
     return [
-        score_yes_no(model, tokenizer, template, text, label, top_k, enable_thinking)
+        score_yes_no(model, tokenizer, template, text, label, top_k, enable_thinking, chat)
         for label in schema.labels()
     ]

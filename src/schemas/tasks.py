@@ -43,9 +43,7 @@ class EdosTaskC(OutputSchema):
     column: ClassVar[str] = "vector"
 
     # Official vector codes; names live in the prompt template
-    vector: Literal[
-        "1.1", "1.2", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2"
-    ]
+    vector: Literal["1.1", "1.2", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2"]
 
 
 class ExistTask11(OutputSchema):
@@ -55,6 +53,16 @@ class ExistTask11(OutputSchema):
     column: ClassVar[str] = "sexist"
 
     sexist: bool
+
+
+class ExistTask12(OutputSchema):
+    dataset: ClassVar[str] = "exist"
+    task: ClassVar[str] = "task_1_2"
+    task_type: ClassVar[TaskType] = "multiclass"
+    column: ClassVar[str] = "intention"
+
+    # Official EXIST 1.2 labels, validator order; NO = not sexist
+    intention: Literal["NO", "REPORTED", "JUDGEMENTAL", "DIRECT"]
 
 
 class ExistTask13(OutputSchema):
@@ -77,5 +85,6 @@ ALL_SCHEMAS: tuple[type[OutputSchema], ...] = (
     EdosTaskB,
     EdosTaskC,
     ExistTask11,
+    ExistTask12,
     ExistTask13,
 )

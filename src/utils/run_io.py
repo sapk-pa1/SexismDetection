@@ -10,8 +10,9 @@ from typing import Any
 def prepare_run_dir(run_dir: Path, config: dict[str, Any], ignore: tuple[str, ...] = ("command",)) -> None:
     """Create a run folder or reopen an unfinished one with the same config; never touch a finished run."""
     if run_dir.exists():
-        if (run_dir / "metrics.json").exists():
-            raise FileExistsError(f"{run_dir.name} is finished (metrics.json exists); use a new run name")
+        # complete.json marks every finished run (test runs have no metrics.json); metrics.json covers older runs
+        if (run_dir / "complete.json").exists() or (run_dir / "metrics.json").exists():
+            raise FileExistsError(f"{run_dir.name} is finished; use a new run name")
         old = json.loads((run_dir / "config.json").read_text())
         diff = sorted(k for k in config.keys() - set(ignore) if old.get(k) != config[k])
         if diff:
@@ -64,4 +65,6 @@ def write_readme(run_dir: Path, config: dict[str, Any], status: str, metrics: di
             if k in metrics
         )
         lines.append(f"**Outcome.** {summary} ({metrics['scoring']}; full numbers in `metrics.json`).")
+    elif status == "finished":
+        lines.append("**Outcome.** Predictions only (label-blind test run); scored in `99_final_eval`.")
     (run_dir / "README.md").write_text("\n".join(lines) + "\n")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import string
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +16,14 @@ TEMPLATE_DIR = Path(__file__).parent / "templates"
 OPTION_LETTERS = string.ascii_uppercase
 
 Messages = list[dict[str, str]]
+
+
+@dataclass(frozen=True)
+class ChatOptions:
+    """Per-model prompt options from configs/llms.yaml, applied on top of the task template."""
+
+    prefill: str = ""  # added after the template prefill, e.g. "<score>" for Granite Guardian
+    chat_kwargs: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -87,10 +95,21 @@ class PromptTemplate:
         return self._messages(self.json.format(fields=fields, text=text))
 
 
-def render(tokenizer: Any, messages: Messages, prefill: str = "", enable_thinking: bool = False) -> str:
+def render(
+    tokenizer: Any,
+    messages: Messages,
+    prefill: str = "",
+    enable_thinking: bool = False,
+    chat: ChatOptions | None = None,
+) -> str:
     """Apply the chat template; the prompt ends where the model's reply starts."""
-    # enable_thinking is read by Qwen templates and ignored by the others
+    chat = chat or ChatOptions()
+    # enable_thinking is read by Qwen/SmolLM3/Nemotron templates and ignored by the others
     prompt = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True, enable_thinking=enable_thinking
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=enable_thinking,
+        **chat.chat_kwargs,
     )
-    return prompt + prefill
+    return prompt + prefill + chat.prefill

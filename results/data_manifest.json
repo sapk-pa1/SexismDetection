@@ -36,15 +36,15 @@
       "rows": 14000
     },
     "exist_dev": {
-      "content_sha256": "1120f88ca336be3be8135c5015d3b0eba611271ba13aa4dcf3562b852f2138a2",
+      "content_sha256": "b5ba6adb4e35daebbc58ace8ad0bf0ec15be1e90f9348bdd31df0deeec2015ce",
       "rows": 489
     },
     "exist_test": {
-      "content_sha256": "a882f967107ef5bb0a8f3eeb13450690c6b81ea741ed81fc355707da12b15623",
+      "content_sha256": "7486bd3b71fdfac86b1574e32491369899fd5318d91131906aa6869e59a415f1",
       "rows": 978
     },
     "exist_train": {
-      "content_sha256": "44de3fc289499a7d9b27f6f0fba08e9d28afce8159b1e3c45f5cf941adc7fccf",
+      "content_sha256": "25ca018e3a59715678508ca7108eaaa834be09203c921e146556e2b0fab15f23",
       "rows": 3260
     }
   },
@@ -89,6 +89,16 @@
       "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_1_gold_soft.json",
       "sha256": "a951679c696c07642af487a6a66177904676747ebf0b65f6a227ee1e153161be"
     },
+    "exist_dev_1_2_hard": {
+      "bytes": 61724,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_2_gold_hard.json",
+      "sha256": "4f97a7b0620560b417cbd5e6a9199643c88ffdfc253f64ae4abb3876ec8eef7e"
+    },
+    "exist_dev_1_2_soft": {
+      "bytes": 189861,
+      "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_2_gold_soft.json",
+      "sha256": "9e12dc73cc9cf86fdc135416e192c91de4d7ba87d53614048609755908ef32e6"
+    },
     "exist_dev_1_3_hard": {
       "bytes": 87899,
       "path": "EXIST/evaluation/golds/EXIST2025_dev_task1_3_gold_hard.json",
@@ -119,6 +129,16 @@
       "path": "EXIST/evaluation/golds/EXIST2025_training_task1_1_gold_soft.json",
       "sha256": "91eef13a3ab0c607a055455fc6a647f649485a077da45b47d4da34843e702163"
     },
+    "exist_train_1_2_hard": {
+      "bytes": 401530,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_2_gold_hard.json",
+      "sha256": "6ad8cc8ec1747687b4fe53eb9761bbe01991646ca13dcdd877b6779cf09f076f"
+    },
+    "exist_train_1_2_soft": {
+      "bytes": 1256861,
+      "path": "EXIST/evaluation/golds/EXIST2025_training_task1_2_gold_soft.json",
+      "sha256": "9bc9ed523b4ce5d2b8c0b879399850c30cf5a16ad77ab474c428952b7a10e062"
+    },
     "exist_train_1_3_hard": {
       "bytes": 552662,
       "path": "EXIST/evaluation/golds/EXIST2025_training_task1_3_gold_hard.json",
@@ -130,5 +150,5 @@
       "sha256": "e857a36c8f14e1775d9680128a7d86df8c8b2085f46b0fe654eebb3a6a6aa8c1"
     }
   },
-  "written_by": "20261019-1557_all_prep_none_dataprep_s42"
+  "written_by": "20261020-1100_all_prep_none_dataprep_s42"
 }

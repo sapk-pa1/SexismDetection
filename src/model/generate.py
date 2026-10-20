@@ -14,7 +14,7 @@ from outlines.backends import get_json_schema_logits_processor
 from pydantic import ValidationError
 from transformers import LogitsProcessorList
 
-from src.prompts.builder import PromptTemplate, render
+from src.prompts.builder import ChatOptions, PromptTemplate, render
 from src.schemas.base import OutputSchema
 
 
@@ -35,10 +35,11 @@ class JsonGenerator:
         text: str,
         max_new_tokens: int = 256,
         enable_thinking: bool = False,
+        chat: ChatOptions | None = None,
     ) -> tuple[str, OutputSchema | None, str | None]:
         """Return (raw output, parsed schema or None, parse error or None)."""
         # The grammar starts after the prefill, so the prefill must not contain JSON
-        prompt = render(self.tokenizer, template.json_messages(text), template.prefill, enable_thinking)
+        prompt = render(self.tokenizer, template.json_messages(text), template.prefill, enable_thinking, chat)
         inputs = self.tokenizer(prompt, return_tensors="pt", add_special_tokens=False).to(self.model.device)
         self.processor.reset()
         out = self.model.generate(

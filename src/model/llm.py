@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from src.model.generate import JsonGenerator
 from src.model.logprob import score_example
-from src.prompts.builder import PromptTemplate
+from src.prompts.builder import ChatOptions, PromptTemplate
 from src.schemas.base import OutputSchema
 from src.schemas.records import Example, Prediction
 
@@ -26,6 +26,7 @@ def infer_single(
     top_k: int = 10,
     max_new_tokens: int = 256,
     enable_thinking: bool = False,
+    chat: ChatOptions | None = None,
 ) -> Prediction:
     """Run one post through one task and return a JSONL-ready Prediction.
 
@@ -49,7 +50,9 @@ def infer_single(
     )
 
     if backend == "logprob":
-        pred.scores = score_example(model, tokenizer, schema, template, example.text, top_k, enable_thinking)
+        pred.scores = score_example(
+            model, tokenizer, schema, template, example.text, top_k, enable_thinking, chat
+        )
         if mass_threshold is not None:
             for s in pred.scores:
                 s.refused = s.mass < mass_threshold
@@ -63,7 +66,7 @@ def infer_single(
         return pred
 
     generator = generator or JsonGenerator(model, tokenizer, schema)
-    raw, parsed, error = generator(template, example.text, max_new_tokens, enable_thinking)
+    raw, parsed, error = generator(template, example.text, max_new_tokens, enable_thinking, chat)
     pred.raw_output = raw
     pred.parsed = parsed.model_dump(by_alias=True) if parsed is not None else None
     pred.parse_error = error

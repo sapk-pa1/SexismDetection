@@ -1,0 +1,115 @@
+# Prompted LLMs (frozen 2026-10-20): 15 open-weight instruct models, <= 8B total params (card figure)
+# Revisions are commit shas resolved from the Hub on 2026-10-20; gated/licence from the Hub API
+# Optional per-model keys: prefill (added after the template prefill), chat_kwargs (apply_chat_template),
+# fp8_dequantize (FP8-only checkpoints on A100), trust_remote_code (default false),
+# blocked (reason the model must not be run yet)
+models:
+  qwen3.5-4b:
+    repo_id: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    params: 4B  # Hub: 5B incl. vision encoder
+    licence: apache-2.0
+    gated: false
+    thinking: default-on  # run with thinking off (logprob) and on (--thinking, generate backend)
+  gemma4-e4b:
+    repo_id: google/gemma-4-E4B-it
+    revision: ee0ef6023621cff504d758262d4e04895a5af4a2
+    params: E4B
+    licence: apache-2.0
+    gated: false
+    thinking: none
+  ministral3-3b:
+    repo_id: mistralai/Ministral-3-3B-Instruct-2512
+    revision: b35d4dfe56c142746f54dbd64f579faab2744308
+    params: 3.4B + 0.4B vision
+    licence: apache-2.0
+    gated: false
+    thinking: none
+    fp8_dequantize: true  # ships FP8 only; A100 has no native FP8
+  olmo3-7b:
+    repo_id: allenai/Olmo-3-7B-Instruct
+    revision: 6e5971d9eba42665f5bd5a0fcf047f299ce1dccc
+    params: 7B
+    licence: apache-2.0
+    gated: false
+    thinking: none
+  llama3.1-8b:
+    repo_id: meta-llama/Llama-3.1-8B-Instruct
+    revision: 0e9e39f249a16976918f6564b8830bc894c89659
+    params: 8B
+    licence: llama3.1
+    gated: true  # manual approval
+    thinking: none
+  phi4-mini:
+    repo_id: microsoft/Phi-4-mini-instruct
+    revision: cfbefacb99257ffa30c83adab238a50856ac3083
+    params: 3.8B
+    licence: mit
+    gated: false
+    thinking: none
+  granite4.1-8b:
+    repo_id: ibm-granite/granite-4.1-8b
+    revision: 1504002f650e656a0a3789d99574df12e3e94ed0
+    params: 8B  # Hub: 9B; first to swap under a strict 8.0B cutoff
+    licence: apache-2.0
+    gated: false
+    thinking: none
+  nemotron3-nano-4b:
+    repo_id: nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16
+    revision: dfaf35de3e30f1867dd8dbc38a7fc9fb52d3914f
+    params: 3.97B
+    licence: nvidia-nemotron-open-model
+    gated: false
+    thinking: default-on  # turned off via enable_thinking=False
+  apertus-8b:
+    repo_id: swiss-ai/Apertus-8B-Instruct-2509
+    revision: b946d40447b2b597999b9c86d44bee0b452c919f
+    params: 8B
+    licence: apache-2.0
+    gated: false
+    thinking: none
+  smollm3-3b:
+    repo_id: HuggingFaceTB/SmolLM3-3B
+    revision: a07cc9a04f16550a088caea529712d1d335b0ac1
+    params: 3B
+    licence: apache-2.0
+    gated: false
+    thinking: default-on  # turned off via enable_thinking=False
+  glm-edge-4b:
+    repo_id: zai-org/glm-edge-4b-chat
+    revision: a1817f2ab339ecdd8497c4d752ea71a65299f29a
+    params: 4B
+    licence: glm-4  # custom licence
+    gated: false
+    thinking: none
+  falcon-h1-7b:
+    repo_id: tiiuae/Falcon-H1-7B-Instruct
+    revision: 41e72f27effbab80cd45b6e884688452253a3686
+    params: 7B  # Hub: 8B
+    licence: falcon-llm
+    gated: false
+    thinking: none
+  exaone4-1.2b:
+    repo_id: LGAI-EXAONE/EXAONE-4.0-1.2B
+    revision: 3abf2810673c7c0778df64a73c2d52eab32d91c4
+    params: 1.28B
+    licence: exaone-1.2-nc  # non-commercial
+    gated: false
+    thinking: none  # opt-in only
+  aya-expanse-8b:
+    repo_id: CohereLabs/aya-expanse-8b
+    revision: 5062468bf9bc0c6035fd64e06274333ec127d980
+    params: 8B
+    licence: cc-by-nc-4.0
+    gated: true  # automatic approval
+    thinking: none
+  granite-guardian-3.3-8b:
+    repo_id: ibm-granite/granite-guardian-3.3-8b
+    revision: b3421eda4ba6fc9f9a71121d7e62de08827469a4
+    params: 8B
+    licence: apache-2.0
+    gated: false
+    thinking: none
+    prefill: "<score>"  # its template does not add <score>; answers lowercase yes/no inside it
+    # Without guardian_config its template judges the built-in "harm" criterion, not our label
+    blocked: needs a guardian_config adapter (label definition as custom_criteria, post as user turn)
