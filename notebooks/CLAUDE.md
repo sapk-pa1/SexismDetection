@@ -11,7 +11,7 @@
 | 2x | LLMs: log-probability baselines, refusal analysis |
 | 3x | Explainability: LIME, SHAP, surrogate models |
 | 4x | Statistics: bootstrap CIs, significance tests |
-| 99 | `99_final_eval`: the only notebook that reads the test set |
+| 99 | `99_final_eval`: the only notebook that reads test labels (label-blind LLM test predictions come from `run_inference.py --split test`) |
 
 ## Cell order for every notebook
 1. Mount Drive, then set `PROJECT_ROOT`, `DATA_ROOT`, `OUTPUT_ROOT`, `HF_HOME`.
@@ -26,4 +26,4 @@
 - Colab disconnects: write predictions incrementally and resume from the last saved ID.
 - Copy data to `/content` at the start for speed. Write outputs to Drive.
 - Strip cell outputs before committing (`nbstripout`). Outputs can contain offensive text and large tables.
-- If the same helper gets copied into 3 or more notebooks, flag it for the later `src/` refactor instead of copying it again.
+- Don't copy helpers between notebooks: once a helper is needed in 2 notebooks, or a notebook has more than 3 helpers, move them into `src/` and import them (`.claude/rules/code-structure.md`).

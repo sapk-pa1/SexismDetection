@@ -203,3 +203,130 @@ Checked with a scratch git dir. Only code, configs, docs, notebooks and `results
 Behaviour is unchanged: no logic or metric definitions changed.
 
 **Check (CPU; same scratch smoke script as the previous entry).** Ruff passes on the script and `src/`. On the tiny random-weight model, EXIST 1.3, EDOS B and CMSB (logprob) and CMSB (generate) all ran end to end. EDOS B gave the same numbers as before the move (macro-F1 0.2, accuracy 0.667 on 3 examples; random weights, so the values mean nothing). The resume (truncated last line dropped, 2 of 3 rerun), finished-run and changed-settings guards still fire. CLAUDE.md now lists `src/utils/` and `run_inference.py`.
+
+## 2026-10-20 · Rule: helpers go into modules (docs only, no run)
+At the user's request, added `.claude/rules/code-structure.md`. Scripts and notebooks stay thin; helpers move into `src/` modules and are imported once any of these holds:
+- a script or notebook has more than 3 helpers or ~100 lines of helper code;
+- a helper is needed in 2+ places;
+- a helper is research logic that must be the same in every run.
+
+Updated the two lines that conflicted with the rule:
+- CLAUDE.md: "Don't add more to `src/` unless asked" now points to the rule. New scripts still need a request.
+- `notebooks/CLAUDE.md`: helpers copied into 3+ notebooks used to be flagged for a later refactor; they are now moved at 2 notebooks.
+
+## 2026-10-20 · CLAUDE.md restructured via /init (docs only, no run)
+Added a Commands section (ruff, `run_inference.py` smoke/resume, no tests yet) and an Architecture section (pipeline, three-place class-order invariant, refusal semantics, `HF_HOME` import order, run-folder contents, bf16 tie issue). Research rules kept unchanged; two README points added (CMSB split can't be regenerated; 02 reads test label-blind). Dropped "Later (not now)", now covered by `.claude/rules/code-structure.md`. Noted that the `requirements.lock` comment in `pyproject.toml` is stale (not fixed).
+
+## 2026-10-20 · 15-LLM registry and label-blind test inference (no GPU run)
+**Why.** The supervisor asked for 15 prompted LLMs instead of 5. The user set the size cap at 8B total params or less, 8B included (model-card figure), so models are comparable. The cap replaces two existing picks: Qwen3.5-9B with Qwen3.5-4B, and Ministral 3 8B with Ministral 3 3B. gpt-oss is excluded (gpt-oss-20b is 21B total / 3.6B active; there is no OpenAI open-weight model at 8B or less). The user also wants LLM predictions on the test sets, so encoder/ML models can be trained on train/dev later.
+
+**Model list.** `configs/llms.yaml`, frozen 2026-10-20:
+- qwen3.5-4b, gemma4-e4b, ministral3-3b, olmo3-7b, llama3.1-8b;
+- phi4-mini, granite4.1-8b, nemotron3-nano-4b, apertus-8b, smollm3-3b;
+- glm-edge-4b, falcon-h1-7b, exaone4-1.2b, aya-expanse-8b, granite-guardian-3.3-8b.
+
+How the list was built and checked:
+- **Research.** A research agent checked every repo on its Hugging Face model page (https://huggingface.co/<repo_id>).
+- **Selection criteria.** Instruct checkpoints, fit on a 40 GB A100, released at least 2 weeks ago, family diversity, including small, fully open and safety models.
+- **Pins.** The revision shas, gating and licences come from the HF API on 2026-10-20.
+- **Correction.** Gemma 4 E4B is Apache-2.0 and not gated; an earlier chat note said it was gated. Gated: Llama 3.1 (manual approval), Aya Expanse (automatic approval). Non-commercial: Aya (CC-BY-NC), EXAONE.
+- **Param figures.** Hub counts that differ from the cards: Granite 4.1 9B, Falcon-H1 8B, Qwen3.5-4B 5B including vision. The card figures are used.
+- **Backups.** Qwen/Qwen3.5-2B, CohereLabs/tiny-aya-global, internlm/internlm3-8b-instruct, Qwen/Qwen3Guard-Gen-8B.
+
+**Code.**
+- **Registry.** `src/utils/registry.py` (`load_llm_registry`, `LLMSpec`). `run_inference.py --model <name>`; the `--model-id/--model-name/--revision` flags override it.
+- **Per-model options.** `prompts.ChatOptions` (prefill, chat_kwargs) is threaded through `render`, the logprob scorers, `JsonGenerator` and `infer_single`. `load_hf_model` takes `fp8_dequantize` (Ministral 3) and `trust_remote_code`. The options are logged in `config.json`.
+- **Label-blind test.** `run_inference.py --split test`:
+  - `load_split` reads only `id, text_norm, split` (plus CMSB `annotated`).
+  - EDOS B/C run on all test posts; the gold-sexist subset is chosen in 99.
+  - No metrics; `complete.json` and a "predictions only" README are written.
+  - `complete.json` now marks every finished run; older runs are recognised by `metrics.json`.
+- **Rule text.** The test-set rule in CLAUDE.md, notebooks/CLAUDE.md, data/CLAUDE.md and README.md now reads: test labels only in 99; label-blind test text reads allowed.
+
+**Check (CPU; scratch scripts, not committed).**
+- `ruff check src run_inference.py` passes.
+- **Loader.** On test, `load_split` returns no label columns. Rows: CMSB 1,126 annotated of 2,725; EDOS 4,000 of 4,000; EXIST 978 of 978.
+- **Tiny model.** On a random-weight model:
+  - test runs for CMSB, EDOS B and EXIST 1.3 wrote `predictions.jsonl`, `complete.json` and the README, with no metrics;
+  - a rerun of a finished test run is refused;
+  - an EDOS B dev run gives the same numbers as before (meaningless values from random weights).
+- **Tokenizers** (tokenizer files only, no weights): 13/15 pass.
+  - Yes/No variants and the letters A–K are single tokens, and the chat templates render.
+  - Qwen3.5-4B, SmolLM3, Nemotron and EXAONE end with an empty think block when thinking is off.
+  - Llama 3.1 and Aya are not checked yet: gated, and there was no HF_TOKEN locally.
+
+**Issues.**
+- **Granite Guardian is blocked** in the registry. Without `guardian_config`, its chat template judges the built-in "harm" criterion, not our label. It needs an adapter: the label definition as `custom_criteria`, the post as the user turn, then yes/no scored after `<score>`.
+- **Ministral 3 FP8 dequantization** on transformers 5.20.1 is untested on GPU.
+- **EXIST config rename.** The working copy of `configs/data_prep.yaml` renames EXIST `task_1_3` to `task_1_2` but keeps the five 1.3 categories. `check_against_config` now fails for every run. This was not changed here; it was flagged to the user.
+- **bf16 tie issue** still pending.
+
+**Next steps.**
+- Decide on the data_prep.yaml rename.
+- Run the tokenizer check for Llama and Aya with HF_TOKEN.
+- Build the Guardian adapter.
+- Run GPU smoke tests (`--limit 5`) per model.
+
+## 2026-10-20 · EXIST Task 1.2 added; task_1_3 name restored (data run)
+**Why.** The user asked to add EXIST Task 1.2 (source intention) next to 1.1 and 1.3. They had also renamed the 1.3 config key to `task_1_2`, which broke the schema/config check for every run. Keys follow the official EXIST numbering, so `task_1_3` is restored.
+
+**Task definition.**
+- `task_1_2` is multiclass on column `intention`, with classes `["NO", REPORTED, JUDGEMENTAL, DIRECT]`. These are the official 4 classes in the order of the EXIST validator's `LIST_LABELS_SUBTASK2`.
+- NO is a class, so 1.2 runs on all tweets, like 1.3. Metrics score the hard-majority subset.
+- Prompt definitions come from `EXIST2025_Annotation_guidelines_Tweets.pdf`: question 2 for the three intention classes, question 1's sexism definition for NO. The text was extracted with macOS PDFKit into the scratchpad; nothing was installed.
+- `"NO"` must be quoted in YAML: the registry check caught a bare `NO` parsed as `False`.
+
+**Code.**
+- `configs/data_prep.yaml`: `task_1_2` added, `task_1_3` restored.
+- `src/schemas/tasks.py`: `ExistTask12`.
+- `src/prompts/templates/exist/task_1_2.yaml`: lettered options A–D.
+- **EDOS-only filter.** `load_split` keeps the gold-sexist filter for EDOS B/C only. The multiclass metrics drop rows with null gold, and the `subset` string now depends on the dataset.
+- **01_data_prep:**
+  - reads the 1.2 hard/soft golds;
+  - builds `intention`, `intention_soft`, `intention_votes`, `intention_n_annot` (`-` counts as NO, UNKNOWN is dropped);
+  - asserts that the votes reproduce the soft gold, that 1.2 NO agrees with 1.1 NO, and the hard counts (all languages: 5,496 train, 841 dev).
+
+**Run.** `20261020-1100_all_prep_none_dataprep_s42`: 01 run locally as a plain-Python cell runner from `notebooks/` (no nbconvert installed), with `update_manifest: true`.
+- All assertions passed.
+- Only `exist_{train,dev,test}` changed; the CMSB and EDOS processed content is unchanged.
+- `results/data_manifest.json` was rewritten, with 4 new raw entries (the 1.2 golds).
+- English 1.2 hard counts:
+
+  | split | NO | REPORTED | JUDGEMENTAL | DIRECT |
+  |---|---|---|---|---|
+  | train | 1,733 | 194 | 148 | 545 |
+  | dev | 250 | 35 | 28 | 87 |
+
+  Source: the run's `metrics.json`.
+
+**Check.** Tiny-model smoke test of `--dataset exist --task task_1_2`. Dev scores the hard-majority subset; test is label-blind and writes predictions only. Ruff passes.
+
+**Open.**
+- The official 1.2 evaluation is hierarchical ICM / ICM-soft; we compute macro-F1 only (TODO).
+- Position bias over the option order is not handled.
+- The 01 notebook still holds cell outputs from the user's last run; strip them before committing.
+
+## 2026-10-20 · notebooks/20_llm_runs.ipynb: batch orchestration (no GPU run)
+**Why.** The user wants the LLM runs driven from a notebook on Colab.
+
+**What.**
+- **`20_llm_runs`** builds the jobs from `CONFIG`: models (all 15 by default) × the 7 tasks (CMSB binary, EDOS A/B/C, EXIST 1.1/1.2/1.3) × splits (dev, test). It runs each job as a `run_inference.py` subprocess, which frees GPU memory and isolates crashes, and logs each job's output to a file in the batch folder.
+- **Resume.** Run names come from a fixed `CONFIG["date"]`, so a rerun skips `done` jobs and resumes `partial` ones.
+- **Statuses.** A job is blocked, done, partial or todo.
+- **Safety.** `dry_run: True` is the default, so "run all" never launches GPU work by accident.
+- **Colab layout.** The processed data is copied to `/content/data`. HF weights go to local `/content/hf_cache`: Drive is slow and too small for 15 models. Outputs stay on Drive.
+- **Records.** Each session writes `status_*.csv` and `failed_*.json` into `OUTPUT_ROOT/{date}_all_all_llms_batch_s42/`, and never overwrites earlier ones.
+- **Helpers.** `src/utils/jobs.py` holds `build_jobs`, `Job`, `job_status`, `status_table`, `run_job`, `tail`, `method_name` and `make_run_name`. `run_inference.py` now builds its run names with the same helpers.
+
+**Check (CPU).**
+- Ruff passes.
+- The notebook runs top to bottom as a plain-Python cell runner in dry-run mode: 210 jobs, 196 todo, 14 blocked (Granite Guardian). The test batch folder was deleted afterwards.
+- The launch path was tested with a stand-in script that loads a tiny random model:
+  - 4 jobs finished (CMSB binary and EXIST 1.2, dev and test, `--limit 2`) and Guardian showed as blocked;
+  - a job with a truncated `predictions.jsonl` showed as partial and resumed to done;
+  - an unknown task gave exit 1 with the error in the log tail.
+
+**Open.**
+- Think-on runs are disabled (`thinking_models: []`). JSON-constrained decoding starts at the first generated token, so it suppresses the thinking; a generate-then-score path is needed first.
+- I can't reach the Colab runtime from here: the IDE kernel tool found no open notebook.
+- No GPU job has been run yet.

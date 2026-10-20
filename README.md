@@ -14,7 +14,7 @@ Each dataset is evaluated on its own tasks, with the official splits. Tasks, tar
 |---|---|---|
 | **CMSB** ("Call me sexist, but…", Samory et al. 2021) | binary `sexist` | 9,543 / 1,363 / 2,725 (frozen 70/10/20 split) |
 | **EDOS** (SemEval-2023 Task 10) | Task A binary; Task B 4 classes; Task C 11 classes (B and C single-label) | 14,000 / 2,000 / 4,000 (official) |
-| **EXIST 2025**, tweets, English | Task 1.1 binary; Task 1.3 multi-label, 5 categories; hard and soft labels | 3,260 / 489 / 978 (official; test unlabelled) |
+| **EXIST 2025**, tweets, English | Task 1.1 binary; Task 1.2 source intention, 4 classes incl. NO; Task 1.3 multi-label, 5 categories; hard and soft labels | 3,260 / 489 / 978 (official; test unlabelled) |
 
 The datasets are **not redistributed** here. Get them from their original releases (TODO: add links and licence notes) and place them under `data/` like this:
 
@@ -33,7 +33,7 @@ data/
 
 - **HEFT** on NeoBERT, and **vanilla NeoBERT** with the same head and training budget (the key baseline).
 - **Encoders:** RoBERTa, DeBERTa-v3, HateBERT.
-- **LLMs** (instruct checkpoints, list frozen in October 2026): Qwen3.5-9B (thinking on and off), Gemma 4 E4B (-it), Ministral 3 8B Instruct 2512, Olmo 3 7B Instruct, Llama 3.1 8B Instruct.
+- **LLMs:** 15 open-weight instruct checkpoints of at most 8B total parameters, frozen 2026-10-20 with pinned revisions in [`configs/llms.yaml`](configs/llms.yaml). Qwen3.5-4B is run with thinking on and off.
   - LLM labels are scored as Yes/No log-probabilities, not free generation.
   - Refusals are logged per (example, label) and reported per model; they are never counted as a "no".
 
@@ -57,10 +57,11 @@ outputs/     one folder per run (gitignored)
 | `01_data_prep` | Build `data/processed/{train,dev,test}/*.parquet` from the raw files; check every input and output against the manifest |
 | `02_data_analysis` | Descriptive statistics of the processed data; writes tables, figures, `analysis.md` and `findings.md` |
 | `1x` (planned) | Encoders: baselines, vanilla NeoBERT, HEFT |
-| `2x` (planned) | LLMs: log-probability baselines, refusal analysis |
+| `20_llm_runs` | Batch LLM inference: every model × task × split as a resumable `run_inference.py` job (dry run by default) |
+| `2x` (planned) | LLMs: refusal analysis, error analysis |
 | `3x` (planned) | Explainability |
 | `4x` (planned) | Statistics: bootstrap CIs, significance tests |
-| `99_final_eval` (planned) | The only notebook that reads the test set |
+| `99_final_eval` (planned) | The only notebook that reads test labels |
 
 ## Running
 
@@ -79,7 +80,7 @@ Package versions are pinned in each notebook's install cell (`PINS`), and each n
   - Run names follow `{date}_{dataset}_{task}_{model}_{method}_s{seed}`.
   - A finished run is never overwritten.
 - **Thresholds and tuning** are set on dev and frozen before the test set is read.
-- **Test labels** are read only in `99_final_eval`. `02_data_analysis` reads test files label-blind (text and audit flags only).
+- **Test labels** are read only in `99_final_eval`. `02_data_analysis` and `run_inference.py --split test` read test files label-blind (text only; no test metrics).
 - **Long loops** are resumable: they skip IDs already in the predictions file.
 - **Notebook outputs** are stripped before committing, because they can contain offensive text.
 - **Logging.** Each run and decision is logged in [`docs/experiment-log.md`](docs/experiment-log.md).
