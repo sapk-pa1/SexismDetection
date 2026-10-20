@@ -173,3 +173,33 @@ Checked with a scratch git dir. Only code, configs, docs, notebooks and `results
 - The full prompt text is no longer stored per label; it is rebuilt from the template sha256 plus the example ID.
 
 **Next steps.** Fill in the excerpted EDOS definitions from the paper. Run 1 dev example per task with Gemma 4 E4B on Colab and check the Yes/No and option mass. Then add the resumable dev loop in a `2x` notebook.
+
+## 2026-10-20 · run_inference.py: dataset-level LLM inference script (no GPU run)
+**What and why.** The user asked for a script in the repo root that runs inference over a dataset. `run_inference.py` runs `src.model.infer_single` over one processed split for one (dataset, task):
+- **Data.** Reads `processed/{train,dev}` only and refuses test, which stays in `99_final_eval`. Filters: CMSB keeps annotated rows only (`--all-cmsb` keeps all). EDOS B/C use the gold-sexist subset; their scope is still TODO. `--limit N` takes the first N rows.
+- **Model.** The revision is resolved to a commit sha via `huggingface_hub`. `--thinking` needs `--backend generate`.
+- **Outputs.** `OUTPUT_ROOT/{run_name}/` gets `config.json` (args, resolved sha, data sha256, filters), `environment.json` (pip freeze, GPU, torch/transformers, git commit and dirty flag), `predictions.jsonl` (flushed per line), `metrics.json` and `README.md`.
+- **Resume.** Rerunning with `--run-name` skips done IDs and drops a truncated last line. It refuses a finished run (one with `metrics.json`) or a run with different settings.
+- **Metrics.** Strict scoring: refused, zero-mass or unparsed answers count as wrong.
+  - Binary: macro-F1, F1 on the positive class, accuracy.
+  - Multiclass: macro-F1 over the classes, accuracy.
+  - Multilabel: macro/micro/per-label F1 and exact match, on the hard-majority subset.
+  - Log-prob runs also save per-label mass stats; the refusal rate is filled in only when `--mass-threshold` is set.
+  - The 0.5 decision rule is provisional. EXIST ICM, the all-models-answered subset and per-label thresholds are TODO.
+
+**Check (CPU; scratch script, not committed).** Ruff passes. A tiny random-weight Llama with the cached Gemma 4 E4B tokenizer and a fake revision ran EXIST 1.3 (logprob), EDOS B (logprob) and CMSB (generate). All three wrote every file. The resume, finished-run and changed-settings guards behaved as designed. These numbers come from random weights and mean nothing.
+
+**Issues.** On the random model, generation filled the token budget with whitespace and every output was a parse error (known xgrammar `whitespace_pattern` limit). `environment.json` is rewritten on each resume. The script hasn't been run with real weights.
+
+**Next steps.** On Colab, run `--limit 5` per task with Gemma 4 E4B and check the Yes/No and option mass. Then do full dev runs.
+
+## 2026-10-20 · run_inference.py helpers moved to src/utils/ (no GPU run)
+**What and why.** At the user's request, moved the helpers out of `run_inference.py` into `src/utils/`. The script now keeps only the CLI, the paths, building the config and the inference loop.
+- `data.py`: `load_split`. Returns the rows, the parquet path and the filters applied. Ids are cast to str. It refuses `test`.
+- `repro.py`: `get_hf_token`, `resolve_revision`, `set_seeds`, `sha256_file`, `environment_info(project_root)`.
+- `run_io.py`: `prepare_run_dir` (the finished-run and changed-settings guards, now raised as exceptions), `read_done`, `load_predictions`, `write_readme`.
+- `metrics.py`: `answers`, `mass_summary`, `compute_metrics`. It now takes explicit `split`/`backend`/`mass_threshold` arguments instead of the argparse namespace.
+
+Behaviour is unchanged: no logic or metric definitions changed.
+
+**Check (CPU; same scratch smoke script as the previous entry).** Ruff passes on the script and `src/`. On the tiny random-weight model, EXIST 1.3, EDOS B and CMSB (logprob) and CMSB (generate) all ran end to end. EDOS B gave the same numbers as before the move (macro-F1 0.2, accuracy 0.667 on 3 examples; random weights, so the values mean nothing). The resume (truncated last line dropped, 2 of 3 rerun), finished-run and changed-settings guards still fire. CLAUDE.md now lists `src/utils/` and `run_inference.py`.
