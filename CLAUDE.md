@@ -4,12 +4,13 @@ Research repo for a paper on multi-label sexism detection. Proposed architecture
 
 HEFT in one paragraph: TODO
 
-**Current phase: notebook experimentation.** Experiments run in `notebooks/`. `src/` holds shared LLM code (added on request, 2026-10-19): `src/schemas/` (per-task OutputSchemas, `Example`/`Prediction` records, registry checked against `configs/data_prep.yaml`), `src/prompts/` (one YAML template per task + builder), `src/model/` (loading, Yes/No log-prob scoring, JSON-constrained generation, `infer_single`). Don't add more to `src/` or create scripts unless asked. `configs/` holds YAML settings for notebooks that have moved theirs out (so far `configs/data_prep.yaml` for 01).
+**Current phase: notebook experimentation.** Experiments run in `notebooks/`. `src/` holds shared LLM code (added on request, 2026-10-19): `src/schemas/` (per-task OutputSchemas, `Example`/`Prediction` records, registry checked against `configs/data_prep.yaml`), `src/prompts/` (one YAML template per task + builder), `src/model/` (loading, Yes/No log-prob scoring, JSON-constrained generation, `infer_single`), `src/utils/` (data loading, seeds/revisions/env info, run-folder I/O, strict metrics; added 2026-10-20). `run_inference.py` (repo root) runs one model over one dev/train split per task. Don't add more to `src/` or create scripts unless asked. `configs/` holds YAML settings for notebooks that have moved theirs out (so far `configs/data_prep.yaml` for 01).
 
 ## Layout
 ```
 notebooks/   experiment notebooks (run on Colab from Google Drive)
-src/         schemas/, prompts/, model/: shared LLM inference code
+src/         schemas/, prompts/, model/, utils/: shared LLM inference code
+run_inference.py  dataset-level LLM inference script (resumable)
 configs/     YAML settings loaded by notebooks (committed)
 data/        datasets (gitignored, never commit)
 outputs/     per-run predictions, metrics, logs (gitignored)
