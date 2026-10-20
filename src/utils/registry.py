@@ -20,6 +20,7 @@ class LLMSpec:
     licence: str
     gated: bool
     thinking: str
+    vram_gb: float  # scheduling estimate for parallel jobs, see configs/llms.yaml
     prefill: str = ""
     chat_kwargs: dict[str, Any] = field(default_factory=dict)
     fp8_dequantize: bool = False

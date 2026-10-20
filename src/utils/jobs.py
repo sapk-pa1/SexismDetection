@@ -1,4 +1,4 @@
-"""Batch LLM runs: job list, stable run names, status from run folders, one subprocess per job."""
+"""Batch LLM runs: job list, stable run names, status from run folders, one subprocess per job (optionally several at once)."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -39,6 +40,7 @@ class Job:
     seed: int
     limit: int | None
     run_name: str
+    vram_gb: float = 0.0  # from configs/llms.yaml, for packing parallel jobs
     blocked: str = ""
 
     def argv(self) -> list[str]:
@@ -71,7 +73,19 @@ def build_jobs(
         for be, think in variants:
             name = make_run_name(date, dataset, task, model, method_name(be, think, split, limit), seed)
             jobs.append(
-                Job(model, dataset, task, split, be, think, seed, limit, name, registry[model].blocked)
+                Job(
+                    model,
+                    dataset,
+                    task,
+                    split,
+                    be,
+                    think,
+                    seed,
+                    limit,
+                    name,
+                    registry[model].vram_gb,
+                    registry[model].blocked,
+                )
             )
     return jobs
 
@@ -98,23 +112,80 @@ def status_table(output_root: Path, jobs: list[Job]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def run_job(job: Job, script: Path, env: dict[str, str], log_dir: Path) -> tuple[int, Path]:
-    """Run one job in its own process (frees GPU memory, isolates crashes); full output to a log file."""
+def _launch(job: Job, script: Path, env: dict[str, str], log_dir: Path) -> tuple[subprocess.Popen, Any, Path]:
+    """Start one job process; its full output is appended to log_dir/{run_name}.log."""
     log_dir.mkdir(parents=True, exist_ok=True)
     log = log_dir / f"{job.run_name}.log"
+    f = log.open("a")
+    f.write(f"\n=== {time.strftime('%Y-%m-%d %H:%M:%S')} {' '.join(job.argv())}\n")
+    f.flush()
+    proc = subprocess.Popen(
+        [sys.executable, str(script), *job.argv()],
+        stdout=f,
+        stderr=subprocess.STDOUT,
+        env={**os.environ, **env},
+        cwd=script.parent,
+    )
+    return proc, f, log
+
+
+def run_job(job: Job, script: Path, env: dict[str, str], log_dir: Path) -> tuple[int, Path]:
+    """Run one job in its own process (frees GPU memory, isolates crashes) and wait for it."""
     start = time.time()
-    with log.open("a") as f:
-        f.write(f"\n=== {time.strftime('%Y-%m-%d %H:%M:%S')} {' '.join(job.argv())}\n")
-        f.flush()
-        proc = subprocess.run(
-            [sys.executable, str(script), *job.argv()],
-            stdout=f,
-            stderr=subprocess.STDOUT,
-            env={**os.environ, **env},
-            cwd=script.parent,
-        )
-    print(f"  exit {proc.returncode} after {(time.time() - start) / 60:.1f} min  log: {log.name}")
-    return proc.returncode, log
+    proc, f, log = _launch(job, script, env, log_dir)
+    code = proc.wait()
+    f.close()
+    print(f"  exit {code} after {(time.time() - start) / 60:.1f} min  log: {log.name}")
+    return code, log
+
+
+def run_jobs_parallel(
+    jobs: list[Job],
+    script: Path,
+    env: dict[str, str],
+    log_dir: Path,
+    *,
+    gpu_budget_gb: float,
+    max_parallel: int,
+    poll_s: float = 5.0,
+) -> dict[str, tuple[int, Path]]:
+    """Run jobs concurrently on one GPU: start in order while the vram_gb estimates fit the budget.
+
+    Each job is still its own batch-1 process, so its scores don't depend on what runs beside it.
+    A job larger than the budget runs alone. Interrupting the cell terminates the children; their
+    runs stay resumable.
+    """
+    pending, running, results = list(jobs), {}, {}
+    try:
+        while pending or running:
+            for name, (proc, f, log, _job, t0) in list(running.items()):
+                if proc.poll() is not None:
+                    f.close()
+                    results[name] = (proc.returncode, log)
+                    del running[name]
+                    print(f"  done  {name}: exit {proc.returncode} after {(time.time() - t0) / 60:.1f} min")
+            used = sum(r[3].vram_gb for r in running.values())
+            # First fit in job order; a big job waits until enough memory frees up
+            for job in list(pending):
+                if len(running) >= max_parallel:
+                    break
+                if used + job.vram_gb <= gpu_budget_gb or not running:
+                    proc, f, log = _launch(job, script, env, log_dir)
+                    running[job.run_name] = (proc, f, log, job, time.time())
+                    used += job.vram_gb
+                    pending.remove(job)
+                    print(
+                        f"  start {job.run_name} (~{job.vram_gb:g} GB, {used:g}/{gpu_budget_gb:g} GB in use)"
+                    )
+            time.sleep(poll_s)
+    except KeyboardInterrupt:
+        for proc, f, *_ in running.values():
+            proc.terminate()
+            proc.wait()
+            f.close()
+        print("interrupted: running jobs stopped; rerun to resume them")
+        raise
+    return results
 
 
 def tail(path: Path, n: int = 5) -> str:

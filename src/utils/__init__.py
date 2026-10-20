@@ -8,6 +8,7 @@ from src.utils.jobs import (
     make_run_name,
     method_name,
     run_job,
+    run_jobs_parallel,
     status_table,
     tail,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "read_done",
     "resolve_revision",
     "run_job",
+    "run_jobs_parallel",
     "set_seeds",
     "sha256_file",
     "status_table",

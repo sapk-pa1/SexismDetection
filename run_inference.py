@@ -192,6 +192,9 @@ def main() -> None:
         (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
         print(json.dumps({k: v for k, v in metrics.items() if k != "mass"}, indent=2))
     complete = {"n_predicted": len(records), "finished": datetime.now().isoformat(timespec="seconds")}
+    if torch.cuda.is_available():
+        # Measured peak, to check the vram_gb estimates used for parallel scheduling
+        complete["peak_gpu_gb"] = round(torch.cuda.max_memory_allocated() / 1e9, 2)
     (run_dir / "complete.json").write_text(json.dumps(complete, indent=2))
     write_readme(run_dir, config, "finished", metrics)
     if torch.cuda.is_available():
