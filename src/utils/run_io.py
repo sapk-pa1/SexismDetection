@@ -57,6 +57,8 @@ def write_readme(run_dir: Path, config: dict[str, Any], status: str, metrics: di
         f"({config['filters']}).",
         f"**Status.** {status}",
     ]
+    if config.get("shots"):
+        lines.insert(-1, f"**Few-shot.** {config['shots']} per class from `{config['shots_file']}`.")
     if metrics is not None:
         keys = ["n_scored", "macro_f1", "micro_f1", "f1_positive", "accuracy", "exact_match"]
         summary = ", ".join(
@@ -68,3 +70,15 @@ def write_readme(run_dir: Path, config: dict[str, Any], status: str, metrics: di
     elif status == "finished":
         lines.append("**Outcome.** Predictions only (label-blind test run); scored in `99_final_eval`.")
     (run_dir / "README.md").write_text("\n".join(lines) + "\n")
+
+
+def load_finished_runs(root: Path, split: str = "test") -> list[dict[str, Any]]:
+    """Every finished run under root for one split: config fields, run_dir and its prediction records."""
+    runs = []
+    for cfg_path in sorted(root.glob("*/config.json")):
+        cfg = json.loads(cfg_path.read_text())
+        if cfg.get("split") != split or not (cfg_path.parent / "complete.json").exists():
+            continue
+        records = load_predictions(cfg_path.parent / "predictions.jsonl")
+        runs.append(cfg | {"run_dir": cfg_path.parent, "records": records})
+    return runs

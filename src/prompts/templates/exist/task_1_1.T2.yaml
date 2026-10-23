@@ -1,0 +1,28 @@
+version: 1
+# Variant T2 of exist/task_1_1.yaml: rewording 2 of the system and question sentences (docs/12 §3.6); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: EXIST 2025 annotation guidelines (tweets), question 1
+system: You annotate tweets for a study of online sexism.
+yes_no: |-
+  Definition of {name}: {definition}
+
+  Tweet: """{text}"""
+
+  Does the tweet above meet the definition of {name}? Respond only with Yes or No.
+json: |-
+  Label the tweet below. Fields:
+  {fields}
+
+  Tweet: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  sexist:
+    name: sexist
+    definition: >-
+      The tweet is sexist itself, describes a sexist situation or criticizes a sexist
+      behaviour. Sexism comprises any form of oppression or prejudice against women
+      because of their sex, based for example on stereotypes, the belief that men are
+      superior to women, or irrational hatred of women (misogyny). It may sound friendly,
+      funny, offensive, hateful or even violent.

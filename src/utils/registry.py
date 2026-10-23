@@ -26,6 +26,7 @@ class LLMSpec:
     fp8_dequantize: bool = False
     trust_remote_code: bool = False
     blocked: str = ""  # non-empty: run_inference refuses the model, with this reason
+    display_name: str = ""  # name used in reports and figures; falls back to the short name
 
 
 def load_llm_registry(path: Path) -> dict[str, LLMSpec]:

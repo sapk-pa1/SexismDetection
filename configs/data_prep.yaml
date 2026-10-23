@@ -3,7 +3,7 @@ task: prep
 model: none
 method: dataprep
 seed: 42
-update_manifest: true # True for the first build, or when raw data or this pipeline changed on purpose
+update_manifest: false # True for the first build, or when raw data or this pipeline changed on purpose
 
 languages: [en]  # EXIST only; CMSB and EDOS are English. Add es to keep Spanish
 cmsb_split_file: splits/cmsb_split_s42.csv  # frozen, never regenerated

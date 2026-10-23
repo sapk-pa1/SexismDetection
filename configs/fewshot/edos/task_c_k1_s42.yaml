@@ -1,0 +1,38 @@
+dataset: edos
+task: task_c
+k: 1
+seed: 42
+max_words: 50
+created: '2026-10-23'
+train_file: processed/train/edos_train.parquet
+train_sha256: d8a793a9a175590ebe8eabdbff2e5b0ddaa34b45673022b0456afbe9571b12fa
+filters:
+- no leak_group
+- no dup_group
+- not empty_norm
+- hard label present
+- <= 50 words
+shots:
+  vector:
+  - id: sexism2022_english-17571
+    answer: '2.3'
+  - id: sexism2022_english-11256
+    answer: '4.1'
+  - id: sexism2022_english-3727
+    answer: '2.1'
+  - id: sexism2022_english-6327
+    answer: '3.3'
+  - id: sexism2022_english-6979
+    answer: '3.1'
+  - id: sexism2022_english-19103
+    answer: '4.2'
+  - id: sexism2022_english-11968
+    answer: '3.2'
+  - id: sexism2022_english-14970
+    answer: '3.4'
+  - id: sexism2022_english-17868
+    answer: '2.2'
+  - id: sexism2022_english-10766
+    answer: '1.1'
+  - id: sexism2022_english-5538
+    answer: '1.2'

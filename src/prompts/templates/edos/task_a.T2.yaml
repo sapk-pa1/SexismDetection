@@ -1,0 +1,26 @@
+version: 1
+# Variant T2 of edos/task_a.yaml: rewording 2 of the system and question sentences (docs/12 §3.6); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: Kirk et al. 2023, SemEval-2023 Task 10
+system: You annotate social media posts for a study of online sexism.
+yes_no: |-
+  Definition of {name}: {definition}
+
+  Post: """{text}"""
+
+  Does the post above meet the definition of {name}? Respond only with Yes or No.
+json: |-
+  Label the post below. Fields:
+  {fields}
+
+  Post: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  sexist:
+    name: sexist
+    definition: >-
+      Any abuse, implicit or explicit, that is directed towards women based on their
+      gender, or on the combination of their gender with one or more other identity
+      attributes.

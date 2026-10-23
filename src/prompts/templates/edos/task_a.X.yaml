@@ -1,0 +1,26 @@
+version: 1
+# Variant X of edos/task_a.yaml: self-explanation prompt for the text backend (docs/12 §3.8); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: Kirk et al. 2023, SemEval-2023 Task 10
+system: You are an expert annotator who labels social media posts for sexism.
+yes_no: |-
+  Definition of {name}: {definition}
+
+  Post: """{text}"""
+
+  Is this post {name} according to the definition? Answer Yes or No, then give one sentence explaining why.
+json: |-
+  Label the post below. Fields:
+  {fields}
+
+  Post: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  sexist:
+    name: sexist
+    definition: >-
+      Any abuse, implicit or explicit, that is directed towards women based on their
+      gender, or on the combination of their gender with one or more other identity
+      attributes.

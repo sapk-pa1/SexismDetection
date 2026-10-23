@@ -1,0 +1,31 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Test macro-F1 under refusal-as-error scoring ($\tau=0.5$; Section~\ref{sec:protocol}). \textbf{Bold}: best model per task; $^{\dagger}$: not significantly different from the best model (paired bootstrap, Holm-adjusted, $\alpha=0.05$). EDOS B/C are scored on the 970 sexist test posts.}
+\label{tab:main}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrlrlrlrl}
+\toprule
+ & \multicolumn{2}{c}{CMSB} & \multicolumn{2}{c}{EDOS A} & \multicolumn{2}{c}{EDOS B} & \multicolumn{2}{c}{EDOS C} \\ \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Model & Macro-F1 & 95\% CI & Macro-F1 & 95\% CI & Macro-F1 & 95\% CI & Macro-F1 & 95\% CI \\
+\midrule
+EXAONE-4.0-1.2B & 0.665 & {\footnotesize[0.637, 0.693]} & 0.460 & {\footnotesize[0.445, 0.476]} & 0.176 & {\footnotesize[0.159, 0.197]} & 0.043 & {\footnotesize[0.030, 0.057]} \\
+Jamba2-3B & 0.792$^{\dagger}$ & {\footnotesize[0.766, 0.816]} & 0.706$^{\dagger}$ & {\footnotesize[0.690, 0.721]} & 0.195 & {\footnotesize[0.175, 0.217]} & 0.033 & {\footnotesize[0.029, 0.036]} \\
+SmolLM3-3B & 0.792$^{\dagger}$ & {\footnotesize[0.766, 0.816]} & 0.696$^{\dagger}$ & {\footnotesize[0.679, 0.712]} & 0.285 & {\footnotesize[0.255, 0.314]} & 0.009 & {\footnotesize[0.002, 0.019]} \\
+Ministral-3-3B & 0.726 & {\footnotesize[0.700, 0.752]} & 0.502 & {\footnotesize[0.486, 0.517]} & 0.267 & {\footnotesize[0.240, 0.296]} & 0.049 & {\footnotesize[0.034, 0.066]} \\
+Phi-4-mini & 0.762 & {\footnotesize[0.736, 0.787]} & 0.667 & {\footnotesize[0.652, 0.682]} & 0.177 & {\footnotesize[0.162, 0.197]} & 0.178 & {\footnotesize[0.152, 0.204]} \\
+Nemotron-3-Nano-4B & 0.621 & {\footnotesize[0.591, 0.648]} & 0.505 & {\footnotesize[0.490, 0.520]} & 0.324 & {\footnotesize[0.299, 0.348]} & 0.107 & {\footnotesize[0.086, 0.128]} \\
+Gemma-4-E4B & 0.804$^{\dagger}$ & {\footnotesize[0.779, 0.828]} & \textbf{0.712} & {\footnotesize[0.696, 0.726]} & 0.441 & {\footnotesize[0.412, 0.467]} & \textbf{0.256} & {\footnotesize[0.227, 0.284]} \\
+GLM-Edge-4B & 0.711 & {\footnotesize[0.684, 0.737]} & 0.549 & {\footnotesize[0.533, 0.564]} & 0.443 & {\footnotesize[0.405, 0.480]} & 0.182 & {\footnotesize[0.158, 0.206]} \\
+Qwen3.5-4B & 0.805$^{\dagger}$ & {\footnotesize[0.780, 0.828]} & 0.694$^{\dagger}$ & {\footnotesize[0.679, 0.708]} & 0.355 & {\footnotesize[0.321, 0.386]} & 0.150 & {\footnotesize[0.126, 0.174]} \\
+Falcon-H1-7B & 0.767 & {\footnotesize[0.741, 0.792]} & 0.552 & {\footnotesize[0.537, 0.567]} & \textbf{0.508} & {\footnotesize[0.466, 0.549]} & 0.253$^{\dagger}$ & {\footnotesize[0.223, 0.281]} \\
+OLMo-3-7B & 0.758 & {\footnotesize[0.731, 0.783]} & 0.577 & {\footnotesize[0.561, 0.592]} & 0.378 & {\footnotesize[0.342, 0.413]} & 0.146 & {\footnotesize[0.122, 0.169]} \\
+Apertus-8B & 0.769 & {\footnotesize[0.743, 0.794]} & 0.526 & {\footnotesize[0.510, 0.542]} & 0.182 & {\footnotesize[0.162, 0.205]} & 0.082 & {\footnotesize[0.069, 0.094]} \\
+Aya-Expanse-8B & 0.749 & {\footnotesize[0.723, 0.774]} & 0.480 & {\footnotesize[0.465, 0.495]} & 0.387 & {\footnotesize[0.359, 0.413]} & 0.003 & {\footnotesize[0.001, 0.007]} \\
+Granite-4.1-8B & \textbf{0.821} & {\footnotesize[0.797, 0.843]} & 0.609 & {\footnotesize[0.594, 0.625]} & 0.362 & {\footnotesize[0.328, 0.394]} & 0.107 & {\footnotesize[0.073, 0.140]} \\
+Llama-3.1-8B & 0.816$^{\dagger}$ & {\footnotesize[0.791, 0.839]} & 0.661 & {\footnotesize[0.646, 0.676]} & 0.353 & {\footnotesize[0.325, 0.380]} & 0.176 & {\footnotesize[0.151, 0.199]} \\
+\midrule
+\textit{Majority class} & \textit{0.405} &  & \textit{0.431} &  & \textit{0.159} &  & \textit{0.032} &  \\
+\bottomrule
+\end{tabular}}
+\end{table*}

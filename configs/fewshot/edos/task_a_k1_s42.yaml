@@ -1,0 +1,20 @@
+dataset: edos
+task: task_a
+k: 1
+seed: 42
+max_words: 50
+created: '2026-10-23'
+train_file: processed/train/edos_train.parquet
+train_sha256: d8a793a9a175590ebe8eabdbff2e5b0ddaa34b45673022b0456afbe9571b12fa
+filters:
+- no leak_group
+- no dup_group
+- not empty_norm
+- hard label present
+- <= 50 words
+shots:
+  sexist:
+  - id: sexism2022_english-11558
+    answer: 'Yes'
+  - id: sexism2022_english-5953
+    answer: 'No'

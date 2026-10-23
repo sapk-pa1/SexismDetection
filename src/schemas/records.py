@@ -34,6 +34,10 @@ class LabelScore(BaseModel):
     pred: bool | str | None  # None when mass is 0
     top_k: list[tuple[str, float]]  # logged so refusals can be inspected
     refused: bool | None = None  # None until the dev mass threshold is frozen
+    # Added 2026-10-24 (absent in older runs): exact tie between the top two answers (bf16 score grid),
+    # and the sha256 of the rendered prompt, which also catches text a chat template adds (e.g. a date)
+    tie: bool | None = None
+    rendered_sha256: str | None = None
 
 
 class Prediction(BaseModel):
@@ -44,10 +48,11 @@ class Prediction(BaseModel):
     task: str
     model_id: str
     revision: str
-    backend: Literal["logprob", "generate"]
+    backend: Literal["logprob", "generate", "text"]
     prompt_id: str
     prompt_sha256: str
     scores: list[LabelScore] = []
     raw_output: str | None = None  # generation backend: always logged, parsed or not
     parsed: dict[str, Any] | None = None  # OutputSchema dumped by alias
     parse_error: str | None = None
+    parse_rule: str | None = None  # text backend: which fixed parser rule matched (src/model/text.py)

@@ -16,7 +16,7 @@ UNANSWERED = "__unanswered__"  # multiclass stand-in for a refused/unparsed answ
 def answers(rec: dict[str, Any], schema: type[OutputSchema]) -> dict[str, Any]:
     """Per-label answer from one prediction; None marks refused, zero-mass or unparsed."""
     keys = [schema.column] if schema.task_type == "multiclass" else schema.labels()
-    if rec["backend"] == "generate":
+    if rec["backend"] in ("generate", "text"):
         parsed = rec["parsed"] or {}
         return {k: parsed.get(k) for k in keys}
     return {s["label"]: None if s["refused"] else s["pred"] for s in rec["scores"]}
@@ -45,6 +45,8 @@ def mass_summary(records: list[dict[str, Any]], threshold: float | None) -> dict
 def _decision_rule(schema: type[OutputSchema], backend: str) -> str:
     if backend == "generate":
         return "JSON-constrained greedy generation"
+    if backend == "text":
+        return "greedy free text read by the fixed parser (src/model/text.py); unparseable = wrong"
     if schema.task_type == "multiclass":
         return "argmax over options"
     return "P(Yes)/mass >= 0.5, provisional until per-label thresholds are tuned on dev"
@@ -76,10 +78,13 @@ def compute_metrics(
 
     if schema.task_type == "binary":
         label = schema.labels()[0]
+        # EXIST 1.1 has tweets with no hard majority (null gold); they have no hard score (CMSB/EDOS have none)
+        ids = [i for i in ids if pd.notna(gold[i])]
         y = np.array([bool(gold[i]) for i in ids])
         raw = [preds[i][label] for i in ids]
         yp = np.array([(not g) if p is None else bool(p) for p, g in zip(raw, y, strict=True)])
         metrics |= {
+            "subset": "posts with a hard majority label" if schema.dataset == "exist" else "all scored posts",
             "n_scored": len(ids),
             "n_unanswered": sum(p is None for p in raw),
             "macro_f1": f1_score(y, yp, average="macro", zero_division=0),
@@ -131,5 +136,56 @@ def compute_metrics(
         metrics["mass"] = mass_summary(records, mass_threshold)
     else:
         metrics["parse_error_rate"] = float(np.mean([r["parse_error"] is not None for r in records]))
-        metrics["refusal_note"] = "constrained decoding cannot show refusals"
+        metrics["refusal_note"] = (
+            "unparseable replies count as wrong"
+            if backend == "text"
+            else "constrained decoding cannot show refusals"
+        )
     return {k: float(v) if isinstance(v, np.floating) else v for k, v in metrics.items()}
+
+
+def apply_mass_threshold(records: list[dict[str, Any]], threshold: float | None) -> list[dict[str, Any]]:
+    """Copies with `refused = mass < threshold` per label; None returns the records unchanged."""
+    if threshold is None:
+        return records
+    out = []
+    for rec in records:
+        scores = [s | {"refused": bool(s["mass"] < threshold)} for s in rec["scores"]]
+        out.append(rec | {"scores": scores})
+    return out
+
+
+def refusal_rates(records: list[dict[str, Any]], threshold: float | None) -> dict[str, float]:
+    """Share of posts refused per label (mass below threshold); 0 for every label when threshold is None."""
+    return {lab: s["refusal_rate"] or 0.0 for lab, s in mass_summary(records, threshold).items()}
+
+
+def answered_ids(records: list[dict[str, Any]], schema: type[OutputSchema]) -> set[str]:
+    """IDs whose every label was answered (not refused, non-zero mass)."""
+    return {r["id"] for r in records if all(v is not None for v in answers(r, schema).values())}
+
+
+def strict_arrays(
+    df: pd.DataFrame, records: list[dict[str, Any]], schema: type[OutputSchema]
+) -> tuple[list[str], np.ndarray, np.ndarray, list[str]]:
+    """Int-coded gold and strict predictions for binary/multiclass, on the posts `compute_metrics` scores.
+
+    Returns (ids, y, yp, classes). Binary classes are ["False", "True"] and a refusal becomes the wrong
+    class; multiclass refusals get code len(classes), which counts as wrong and belongs to no class.
+    """
+    if schema.task_type == "multilabel":
+        raise ValueError("strict_arrays covers binary and multiclass tasks only")
+    gold = df.set_index("id")[schema.column]
+    preds = {r["id"]: answers(r, schema) for r in records}
+    ids = [i for i in gold.index if i in preds and pd.notna(gold[i])]
+    if schema.task_type == "binary":
+        label = schema.labels()[0]
+        y = np.array([int(bool(gold[i])) for i in ids])
+        raw = [preds[i][label] for i in ids]
+        yp = np.array([1 - g if p is None else int(bool(p)) for p, g in zip(raw, y, strict=True)])
+        return ids, y, yp, ["False", "True"]
+    classes = schema.labels()
+    code = {c: k for k, c in enumerate(classes)}
+    y = np.array([code[str(gold[i])] for i in ids])
+    yp = np.array([len(classes) if (p := preds[i][schema.column]) is None else code[p] for i in ids])
+    return ids, y, yp, classes

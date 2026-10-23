@@ -1,0 +1,29 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Comparison with the best model of each task. $\Delta$: macro-F1 difference; $p_{\text{boot}}$: paired-bootstrap test of the macro-F1 difference (primary); $p_{\text{McN}}$: exact McNemar test of per-post correctness (secondary, binary tasks). All $p$-values are Holm-adjusted over the 14 comparisons of a task.}
+\label{tab:significance}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{CMSB} & \multicolumn{3}{c}{EDOS A} & \multicolumn{2}{c}{EDOS B} & \multicolumn{2}{c}{EDOS C} \\ \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+Model & $\Delta$ & $p_{\text{boot}}$ & $p_{\text{McN}}$ & $\Delta$ & $p_{\text{boot}}$ & $p_{\text{McN}}$ & $\Delta$ & $p_{\text{boot}}$ & $\Delta$ & $p_{\text{boot}}$ \\
+\midrule
+EXAONE-4.0-1.2B & -0.156 & $<$0.001 & $<$0.001 & -0.251 & $<$0.001 & $<$0.001 & -0.332 & $<$0.001 & -0.213 & $<$0.001 \\
+Jamba2-3B & -0.029 & 0.141 & 0.959 & -0.005 & 0.557 & 0.773 & -0.313 & $<$0.001 & -0.223 & $<$0.001 \\
+SmolLM3-3B & -0.029 & 0.214 & 1.000 & -0.015 & 0.223 & 0.599 & -0.223 & $<$0.001 & -0.247 & $<$0.001 \\
+Ministral-3-3B & -0.094 & $<$0.001 & $<$0.001 & -0.210 & $<$0.001 & $<$0.001 & -0.242 & $<$0.001 & -0.207 & $<$0.001 \\
+Phi-4-mini & -0.059 & 0.001 & $<$0.001 & -0.044 & $<$0.001 & $<$0.001 & -0.331 & $<$0.001 & -0.078 & $<$0.001 \\
+Nemotron-3-Nano-4B & -0.200 & $<$0.001 & $<$0.001 & -0.206 & $<$0.001 & $<$0.001 & -0.185 & $<$0.001 & -0.149 & $<$0.001 \\
+Gemma-4-E4B & -0.017 & 0.472 & 1.000 & best & -- & -- & -0.067 & 0.001 & best & -- \\
+GLM-Edge-4B & -0.110 & $<$0.001 & $<$0.001 & -0.163 & $<$0.001 & $<$0.001 & -0.065 & 0.004 & -0.074 & $<$0.001 \\
+Qwen3.5-4B & -0.016 & 0.472 & 1.000 & -0.018 & 0.056 & $<$0.001 & -0.153 & $<$0.001 & -0.106 & $<$0.001 \\
+Falcon-H1-7B & -0.054 & $<$0.001 & $<$0.001 & -0.159 & $<$0.001 & $<$0.001 & best & -- & -0.003 & 0.868 \\
+OLMo-3-7B & -0.063 & $<$0.001 & $<$0.001 & -0.135 & $<$0.001 & $<$0.001 & -0.130 & $<$0.001 & -0.110 & $<$0.001 \\
+Apertus-8B & -0.052 & $<$0.001 & $<$0.001 & -0.186 & $<$0.001 & $<$0.001 & -0.326 & $<$0.001 & -0.174 & $<$0.001 \\
+Aya-Expanse-8B & -0.071 & $<$0.001 & $<$0.001 & -0.231 & $<$0.001 & $<$0.001 & -0.121 & $<$0.001 & -0.253 & $<$0.001 \\
+Granite-4.1-8B & best & -- & -- & -0.102 & $<$0.001 & $<$0.001 & -0.147 & $<$0.001 & -0.149 & $<$0.001 \\
+Llama-3.1-8B & -0.005 & 0.670 & 1.000 & -0.050 & $<$0.001 & $<$0.001 & -0.155 & $<$0.001 & -0.080 & $<$0.001 \\
+\bottomrule
+\end{tabular}}
+\end{table*}

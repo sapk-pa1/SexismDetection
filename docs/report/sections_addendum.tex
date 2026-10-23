@@ -1,0 +1,79 @@
+% Draft sections for the OSNEM submission (addendum A1, docs/12-protocol-addendum.md). Every number is TODO until
+% the post-hoc run of 99_final_eval writes results/posthoc_eval/tables/; cite the table file next to each number.
+% \input this file from zero_shot_sexism_llms.tex after the main results, once the runs exist.
+
+\section{Analyses added after the test labels were read}
+\label{sec:posthoc}
+The main results (Section~\ref{sec:results}) follow a protocol fixed on 2026-10-20 before any test label was read.
+The analyses in this section were added afterwards. Their rules (metrics, thresholds, tie rules, word lists, prompt
+variants and sample sizes) were written in a dated protocol addendum before any of them ran. We label each
+analysis as \emph{post hoc} (a new view of the frozen predictions) or \emph{pre-registered} (new inference runs
+whose rules were fixed before they ran). None of them changes a primary number. The test composition of CMSB
+(adversarial modifications) was inspected after primary scoring.
+
+\subsection{How certain are the comparisons?}
+% Source: stats_display.csv, mde_by_task.csv, size_vs_f1_ci.csv, cross_task_tau.csv
+We report simultaneous (Bonferroni over 14 comparisons) intervals for the difference to the best model next to the
+per-comparison intervals of Table~\ref{tab:main}, the minimum detectable difference at 80\% power, and the
+probability that each model is the best one. TODO: MDE per task; which rankings are stable.
+
+\subsection{Why models miss sexism}
+\label{sec:failure}
+% Sources: failure_fnr_by_form.csv, failure_by_support.csv, failure_reason_shares.csv, failure_nonanswer_tokens.csv,
+% failure_fpr_gender_terms.csv, failure_expert_override.csv, cmsb_contrast_set.csv, exist_dev_fnr_by_intention.csv
+For every model, post and label we record whether the model said Yes, and, for every miss, a reason code: a
+confident No (log-odds $\le -2$), a borderline No, or a non-answer (answer mass $< 0.5$, with the class of the
+first reply token). We relate misses to the form of sexism (EDOS categories and vectors; explicit derogation and
+threats vs implicit animosity and prejudiced discussion; CMSB source scales; EXIST source intention), to annotator
+support, to the presence of slurs and gender terms, and to the CMSB adversarial pairs.
+TODO: which forms are missed most; the share of confident vs borderline misses; whether false flags concentrate
+on posts with gender terms or minority annotator support; contrast-set pair accuracy.
+
+\subsection{Explainability}
+\label{sec:xai}
+% Sources: xai_faithfulness_by_cell.csv, xai_lexicon_effects.csv, xai_plausibility_cmsb.csv,
+% xai_counterfactual_flips.csv, xai_self_explanation_codes.csv
+We explain the Yes/No log-odds of the best models with SHAP and LIME on a stratified sample of true and false
+positives and negatives. We test whether the attributions are faithful (ERASER comprehensiveness and sufficiency
+against random words, with masking and with deletion) and plausible (overlap with the words the CMSB modification
+changed). Two counterfactual rewrites probe what drives the decision on every scored post: swapping gendered words,
+and removing slurs and profanity. We contrast these with the models' own one-sentence explanations of their
+errors. Those explanations are model claims, not faithful accounts of the decision \citep{turpin2023}.
+TODO: results; limits of each method.
+
+\subsection{EXIST 2025 on the development split}
+\label{sec:exist-dev}
+% Sources: exist_dev_official_metrics.csv, exist_dev_strict.csv
+The EXIST 2025 test gold is not public, and scoring English-only predictions against the bilingual gold is not
+valid. We therefore score the zero-shot models on the 489 English development tweets with the official metrics
+(ICM, ICM-Norm, F1; ICM-Soft for the soft setting; PyEvALL) and the official hierarchy for tasks 1.2 and 1.3.
+No model is trained or tuned on these tweets, but they are a development split, the tweets are probably the EXIST
+2023 corpus (TODO: confirm), and $n \approx 400$--$444$ cannot separate most models. We make no ranking claims here.
+TODO: results with intervals.
+
+\subsection{Robustness to prompt wording and option order}
+% Sources: prompt5_*.csv, option_order_*.csv, answer_prefix_v2.csv, format_check.csv
+TODO: spread over five frozen templates (mean $\pm$ SD, Kendall's $W$); permutation consistency and PriDe;
+non-answer rate with an answer prefix; first-token vs free-text mismatch.
+
+\subsection{Calibration, decision rules and annotator disagreement}
+% Sources: threshold_free_binary.csv, label_free_decision_rules.csv, dev_tuned_rules_on_test.csv, soft_metrics.csv,
+% risk_coverage.csv
+TODO: AUROC/AUPRC; prior-matched and batch-calibrated decisions; dev-tuned thresholds; L1/Brier against annotator
+shares; risk-coverage.
+
+\subsection{Supervised reference}
+% Sources: encoders_per_seed.csv, encoders_summary.csv
+TODO: DeBERTa-v3-base and RoBERTa-base, three seeds each, mean $\pm$ SD; a reference point, not a claim of
+superiority in either direction.
+
+% ---------------------------------------------------------------- Elsevier front and back matter (TODO)
+% Keywords (3-5): sexism detection; large language models; zero-shot classification; content moderation;
+%   explainability   (TODO: confirm with co-authors)
+% Highlights (3-5 bullets, <= 85 characters each): TODO after the results are final.
+% Declaration of competing interest: TODO ("The authors declare no competing interests." if true).
+% CRediT authorship contribution statement: TODO.
+% Data availability: code, prompts, frozen configs, split ids and per-post model scores (no post text) on Zenodo
+%   (TODO DOI); datasets from their original providers under their terms (TODO: check each licence).
+% Declaration of generative AI and AI-assisted technologies in the writing process: TODO (required by Elsevier;
+%   state which tools were used, for what, and that the authors take responsibility for the content).

@@ -1,0 +1,41 @@
+dataset: exist
+task: task_1_3
+k: 1
+seed: 42
+max_words: 50
+created: '2026-10-23'
+train_file: processed/train/exist_train.parquet
+train_sha256: ce62c5e465d3c06a1674dbdf221b94a18af8973fc001f9a9c368a229be201dbb
+filters:
+- no leak_group
+- no dup_group
+- not empty_norm
+- hard label present
+- <= 50 words
+- lang en
+shots:
+  IDEOLOGICAL-INEQUALITY:
+  - id: '202845'
+    answer: 'No'
+  - id: '200212'
+    answer: 'Yes'
+  STEREOTYPING-DOMINANCE:
+  - id: '202303'
+    answer: 'Yes'
+  - id: '201512'
+    answer: 'No'
+  OBJECTIFICATION:
+  - id: '201672'
+    answer: 'Yes'
+  - id: '202946'
+    answer: 'No'
+  SEXUAL-VIOLENCE:
+  - id: '200442'
+    answer: 'Yes'
+  - id: '202310'
+    answer: 'No'
+  MISOGYNY-NON-SEXUAL-VIOLENCE:
+  - id: '200291'
+    answer: 'No'
+  - id: '200843'
+    answer: 'Yes'

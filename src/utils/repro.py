@@ -49,18 +49,25 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _run(cmd: list[str], cwd: Path) -> str:
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=cwd).stdout.strip()
+    except Exception as e:
+        return f"unavailable: {e}"
+
+
+def git_state(project_root: Path) -> dict[str, Any]:
+    """Commit and dirty flag of the repo; no torch import, so usable before HF_HOME is set."""
+    return {
+        "git_commit": _run(["git", "rev-parse", "HEAD"], project_root),
+        "git_dirty": _run(["git", "status", "--porcelain"], project_root) != "",
+    }
+
+
 def environment_info(project_root: Path) -> dict[str, Any]:
     """Package versions, GPU and git state, saved next to every run."""
     import torch
     import transformers
-
-    def run(cmd: list[str]) -> str:
-        try:
-            return subprocess.run(
-                cmd, capture_output=True, text=True, check=True, cwd=project_root
-            ).stdout.strip()
-        except Exception as e:
-            return f"unavailable: {e}"
 
     return {
         "python": sys.version,
@@ -69,7 +76,6 @@ def environment_info(project_root: Path) -> dict[str, Any]:
         "transformers": transformers.__version__,
         "cuda": torch.version.cuda,
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
-        "git_commit": run(["git", "rev-parse", "HEAD"]),
-        "git_dirty": run(["git", "status", "--porcelain"]) != "",
-        "pip_freeze": run([sys.executable, "-m", "pip", "freeze"]).splitlines(),
+        **git_state(project_root),
+        "pip_freeze": _run([sys.executable, "-m", "pip", "freeze"], project_root).splitlines(),
     }

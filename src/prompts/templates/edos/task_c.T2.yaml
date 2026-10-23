@@ -1,0 +1,57 @@
+version: 1
+# Variant T2 of edos/task_c.yaml: rewording 2 of the system and question sentences (docs/12 §3.6); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: Kirk et al. 2023, SemEval-2023 Task 10
+system: You annotate social media posts for a study of online sexism.
+options: |-
+  Which one of these fine-grained types of sexism applies to the post below?
+
+  {options}
+
+  Post: """{text}"""
+
+  Respond only with the letter of one type.
+json: |-
+  Label the post below with exactly one vector code. Vectors:
+  {fields}
+
+  Post: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  "1.1":
+    name: threats of harm
+    definition: Expressing intent, willingness or desire to harm an individual woman or group of women.
+  "1.2":
+    name: incitement and encouragement of harm
+    definition: Inciting or encouraging an individual, group, or general audience to harm a woman or group of women.
+  "2.1":
+    name: descriptive attacks
+    definition: Characterising or describing women in a derogatory manner.
+  "2.2":
+    name: aggressive and emotive attacks
+    definition: Expressing strong negative sentiment against women, such as disgust or hatred.
+  "2.3":
+    name: dehumanising attacks and overt sexual objectification
+    definition: >-
+      Derogating women by comparing them to non-human entities such as vermin, disease or
+      refuse, or overtly reducing them to sexual objects.
+  "3.1":
+    name: casual use of gendered slurs, profanities and insults
+    definition: Using gendered slurs, gender-based profanities and insults, but not to intentionally attack women.
+  "3.2":
+    name: immutable gender differences and gender stereotypes
+    definition: Asserting immutable, natural or otherwise essential differences between men and women.
+  "3.3":
+    name: backhanded gendered compliments
+    definition: Ostensibly complimenting women, but actually belittling or implying their inferiority.
+  "3.4":
+    name: condescending explanations or unwelcome advice
+    definition: Offering unsolicited or patronising advice to women on topics and issues they know more about.
+  "4.1":
+    name: supporting mistreatment of individual women
+    definition: Expressing support for mistreatment of women as individuals.
+  "4.2":
+    name: supporting systemic discrimination against women as a group
+    definition: Expressing support for systemic discrimination of women as a group.

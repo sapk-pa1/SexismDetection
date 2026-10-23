@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 import torch
 
 from src.prompts.builder import ChatOptions, PromptTemplate, render
+from src.prompts.fewshot import Shot, Shots
 from src.schemas.base import OutputSchema
 from src.schemas.records import LabelScore
 
@@ -50,10 +52,16 @@ def score_yes_no(
     top_k: int = 10,
     enable_thinking: bool = False,
     chat: ChatOptions | None = None,
+    shots: list[Shot] = (),
 ) -> LabelScore:
     """Score one label from the next-token Yes/No distribution."""
+    # template.logprob_prefill is "" for the frozen v1 prompts, so their rendered text is unchanged
     prompt = render(
-        tokenizer, template.yes_no_messages(text, label), enable_thinking=enable_thinking, chat=chat
+        tokenizer,
+        template.yes_no_messages(text, label, shots),
+        template.logprob_prefill,
+        enable_thinking=enable_thinking,
+        chat=chat,
     )
     probs = next_token_probs(model, tokenizer, prompt)
     p_yes = probs[answer_token_ids(tokenizer, YES_VARIANTS)].sum().item()
@@ -65,8 +73,10 @@ def score_yes_no(
         probs={"Yes": p_yes, "No": p_no},
         mass=mass,
         score=score,
-        pred=None if score is None else score >= 0.5,  # TODO: per-label thresholds tuned on dev
+        pred=None if score is None else score >= 0.5,  # dev-tuned thresholds are applied in 99 (docs/12 §3.1)
         top_k=_top_k(tokenizer, probs, top_k),
+        tie=mass > 0 and p_yes == p_no,
+        rendered_sha256=hashlib.sha256(prompt.encode()).hexdigest(),
     )
 
 
@@ -79,16 +89,29 @@ def score_options(
     top_k: int = 10,
     enable_thinking: bool = False,
     chat: ChatOptions | None = None,
+    shots: list[Shot] = (),
+    perm: int = 0,
 ) -> LabelScore:
-    """Score a single-label task from the next-token distribution over option letters."""
-    prompt = render(tokenizer, template.option_messages(text), enable_thinking=enable_thinking, chat=chat)
+    """Score a single-label task from the next-token distribution over option letters.
+
+    `perm` rotates which class sits behind letter A (option-order control); probs stay keyed by class.
+    """
+    prompt = render(
+        tokenizer,
+        template.option_messages(text, shots, perm),
+        template.logprob_prefill,
+        enable_thinking=enable_thinking,
+        chat=chat,
+    )
     probs = next_token_probs(model, tokenizer, prompt)
     class_probs = {
         cls: probs[answer_token_ids(tokenizer, (letter, f" {letter}"))].sum().item()
-        for letter, cls in zip(template.option_letters(), template.labels, strict=True)
+        for letter, cls in zip(template.option_letters(), template.option_order(perm), strict=True)
     }
     mass = sum(class_probs.values())
+    # max() keeps the first of exactly tied classes, i.e. the one shown earlier; `tie` records that it happened
     best = max(class_probs, key=class_probs.get)
+    top2 = sorted(class_probs.values(), reverse=True)[:2]
     return LabelScore(
         label=column,
         probs=class_probs,
@@ -96,6 +119,8 @@ def score_options(
         score=class_probs[best] / mass if mass > 0 else None,
         pred=best if mass > 0 else None,
         top_k=_top_k(tokenizer, probs, top_k),
+        tie=mass > 0 and len(top2) == 2 and top2[0] == top2[1],
+        rendered_sha256=hashlib.sha256(prompt.encode()).hexdigest(),
     )
 
 
@@ -108,11 +133,31 @@ def score_example(
     top_k: int = 10,
     enable_thinking: bool = False,
     chat: ChatOptions | None = None,
+    shots: Shots | None = None,
+    perm: int = 0,
 ) -> list[LabelScore]:
     """All scores for one post: one per label (binary, multilabel) or one (multiclass)."""
+    shots = shots or {}
     if schema.task_type == "multiclass":
-        return [score_options(model, tokenizer, template, text, schema.column, top_k, enable_thinking, chat)]
+        return [
+            score_options(
+                model,
+                tokenizer,
+                template,
+                text,
+                schema.column,
+                top_k,
+                enable_thinking,
+                chat,
+                shots.get(schema.column, ()),
+                perm,
+            )
+        ]
+    if perm:
+        raise ValueError("option permutations apply to multiclass tasks only")
     return [
-        score_yes_no(model, tokenizer, template, text, label, top_k, enable_thinking, chat)
+        score_yes_no(
+            model, tokenizer, template, text, label, top_k, enable_thinking, chat, shots.get(label, ())
+        )
         for label in schema.labels()
     ]

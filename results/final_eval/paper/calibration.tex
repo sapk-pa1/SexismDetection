@@ -1,0 +1,30 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Predicted sexist rate against the gold rate, expected calibration error (ECE, 10 equal-width bins) of $P(\text{Yes})/m$, and the signed gap between the mean score and the gold rate (positive: scores too high on average).}
+\label{tab:calibration}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{CMSB} & \multicolumn{3}{c}{EDOS A} \\ \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Model & Pos.\ rate & ECE & Gap & Pos.\ rate & ECE & Gap \\
+\midrule
+EXAONE-4.0-1.2B & 0.531 & 0.244 & +0.194 & 0.760 & 0.502 & +0.500 \\
+Jamba2-3B & 0.369 & 0.159 & +0.057 & 0.327 & 0.199 & +0.088 \\
+SmolLM3-3B & 0.306 & 0.034 & -0.012 & 0.259 & 0.094 & +0.033 \\
+Ministral-3-3B & 0.480 & 0.127 & +0.126 & 0.726 & 0.411 & +0.411 \\
+Phi-4-mini & 0.428 & 0.135 & +0.096 & 0.452 & 0.237 & +0.212 \\
+Nemotron-3-Nano-4B & 0.689 & 0.325 & +0.325 & 0.710 & 0.410 & +0.410 \\
+Gemma-4-E4B & 0.430 & 0.151 & +0.101 & 0.334 & 0.203 & +0.094 \\
+GLM-Edge-4B & 0.552 & 0.211 & +0.211 & 0.665 & 0.369 & +0.369 \\
+Qwen3.5-4B & 0.413 & 0.098 & +0.098 & 0.448 & 0.198 & +0.198 \\
+Falcon-H1-7B & 0.525 & 0.212 & +0.206 & 0.662 & 0.428 & +0.418 \\
+OLMo-3-7B & 0.461 & 0.126 & +0.113 & 0.628 & 0.339 & +0.339 \\
+Apertus-8B & 0.437 & 0.151 & +0.151 & 0.700 & 0.423 & +0.423 \\
+Aya-Expanse-8B & 0.530 & 0.228 & +0.209 & 0.751 & 0.508 & +0.504 \\
+Granite-4.1-8B & 0.457 & 0.149 & +0.135 & 0.593 & 0.362 & +0.344 \\
+Llama-3.1-8B & 0.390 & 0.093 & +0.080 & 0.521 & 0.282 & +0.282 \\
+\midrule
+\textit{Gold} & 0.321 & -- & -- & 0.242 & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}

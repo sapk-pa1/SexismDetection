@@ -1,0 +1,31 @@
+version: 1
+# Variant T3 of cmsb/binary.yaml: format variant 1: post before the definition or question (docs/12 §3.6); wording as v1
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: Samory et al. 2021, ICWSM, Table 2 and Sec. 2.2
+system: You are an expert annotator who labels social media posts for sexism.
+yes_no: |-
+  Post: """{text}"""
+
+  Definition of {name}: {definition}
+
+  Is this post {name} according to the definition? Answer with Yes or No only.
+json: |-
+  Label the post below. Fields:
+  {fields}
+
+  Post: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  sexist:
+    name: sexist
+    definition: >-
+      A post is sexist if its content and/or its phrasing is sexist. Sexist content
+      prescribes behaviours or qualities that women (and men) are supposed to exhibit to
+      conform to traditional gender roles; describes supposed differences between men
+      and women through explicit comparisons and stereotypes; acknowledges inequalities
+      between men and women but justifies or endorses them; or states that there are no
+      inequalities between men and women (any more) and/or opposes feminism. Sexist
+      phrasing means attacks, foul language or derogatory depictions directed towards
+      individuals because of their sex.

@@ -16,11 +16,15 @@ def load_split(
     schema: type[OutputSchema],
     all_cmsb: bool = False,
     limit: int | None = None,
+    sample: int | None = None,
+    seed: int = 42,
 ) -> tuple[pd.DataFrame, Path, list[str]]:
     """Return (rows to run on, parquet path, applied filters); ids are cast to str.
 
     On test the frame is label-blind: only id, text_norm, split (and CMSB `annotated`) are read.
     `annotated` is source metadata, but every unannotated CMSB post is non-sexist.
+    `sample` draws N rows at random with `seed` (sanity runs); it never looks at labels, so it is
+    the same draw on test and dev.
     """
     path = data_root / "processed" / split / f"{dataset}_{split}.parquet"
     blind = split == "test"
@@ -40,5 +44,9 @@ def load_split(
     if limit is not None:
         df = df.head(limit)
         filters.append(f"first {limit} rows")
+    if sample is not None:
+        n = min(sample, len(df))
+        df = df.sample(n=n, random_state=seed).sort_index()
+        filters.append(f"random sample of {n} (seed {seed})")
     df = df.reset_index(drop=True).assign(id=lambda d: d["id"].astype(str))
     return df, path, filters

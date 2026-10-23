@@ -1,0 +1,40 @@
+\begin{table}[t]
+\caption{Expected calibration error (10 bins) of P(Yes)/mass on test; binary tasks.}
+\label{tab:calibration}
+\begin{tabular}{llrrrrr}
+\toprule
+setting & model & ece & n_distinct_scores & share_score_exact_0.5 & n_no_score & mean_score_minus_rate \\
+\midrule
+CMSB binary & exaone4-1.2b & 0.244 & 1070 & 0 & 0 & 0.194 \\
+CMSB binary & jamba2-3b & 0.159 & 1070 & 0 & 0 & 0.057 \\
+CMSB binary & smollm3-3b & 0.034 & 1070 & 0 & 0 & -0.012 \\
+CMSB binary & ministral3-3b & 0.127 & 1070 & 0 & 0 & 0.126 \\
+CMSB binary & phi4-mini & 0.135 & 1070 & 0 & 0 & 0.096 \\
+CMSB binary & nemotron3-nano-4b & 0.325 & 1070 & 0 & 0 & 0.325 \\
+CMSB binary & gemma4-e4b & 0.151 & 1059 & 0 & 0 & 0.101 \\
+CMSB binary & glm-edge-4b & 0.211 & 1070 & 0 & 0 & 0.211 \\
+CMSB binary & qwen3.5-4b & 0.098 & 1070 & 0 & 0 & 0.098 \\
+CMSB binary & falcon-h1-7b & 0.212 & 1070 & 0 & 0 & 0.206 \\
+CMSB binary & olmo3-7b & 0.126 & 1070 & 0 & 0 & 0.113 \\
+CMSB binary & apertus-8b & 0.151 & 1070 & 0 & 0 & 0.151 \\
+CMSB binary & aya-expanse-8b & 0.228 & 1070 & 0 & 0 & 0.209 \\
+CMSB binary & granite4.1-8b & 0.149 & 1028 & 0 & 0 & 0.135 \\
+CMSB binary & llama3.1-8b & 0.093 & 1070 & 0 & 0 & 0.080 \\
+EDOS A & exaone4-1.2b & 0.502 & 3998 & 0 & 0 & 0.500 \\
+EDOS A & jamba2-3b & 0.199 & 3998 & 0 & 0 & 0.088 \\
+EDOS A & smollm3-3b & 0.094 & 4000 & 0 & 0 & 0.033 \\
+EDOS A & ministral3-3b & 0.411 & 4000 & 0 & 0 & 0.411 \\
+EDOS A & phi4-mini & 0.237 & 3999 & 0 & 0 & 0.212 \\
+EDOS A & nemotron3-nano-4b & 0.410 & 4000 & 0 & 0 & 0.410 \\
+EDOS A & gemma4-e4b & 0.203 & 3974 & 0 & 0 & 0.094 \\
+EDOS A & glm-edge-4b & 0.369 & 3999 & 0 & 0 & 0.369 \\
+EDOS A & qwen3.5-4b & 0.198 & 4000 & 0 & 0 & 0.198 \\
+EDOS A & falcon-h1-7b & 0.428 & 4000 & 0 & 0 & 0.418 \\
+EDOS A & olmo3-7b & 0.339 & 4000 & 0 & 0 & 0.339 \\
+EDOS A & apertus-8b & 0.423 & 4000 & 0 & 0 & 0.423 \\
+EDOS A & aya-expanse-8b & 0.508 & 3998 & 0 & 0 & 0.504 \\
+EDOS A & granite4.1-8b & 0.362 & 3939 & 0 & 0 & 0.344 \\
+EDOS A & llama3.1-8b & 0.282 & 4000 & 0 & 0 & 0.282 \\
+\bottomrule
+\end{tabular}
+\end{table}

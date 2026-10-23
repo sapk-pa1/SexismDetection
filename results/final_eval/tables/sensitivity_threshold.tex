@@ -1,0 +1,70 @@
+\begin{table}[t]
+\caption{Strict macro-F1 on test under each pre-declared soft-refusal cutoff (none = no cutoff); primary is 0.5.}
+\label{tab:sensitivity_threshold}
+\begin{tabular}{llrrrr}
+\toprule
+setting & model & macro_f1@None & macro_f1@0.1 & macro_f1@0.5 & macro_f1@0.9 \\
+\midrule
+CMSB binary & exaone4-1.2b & 0.665 & 0.665 & 0.665 & 0.665 \\
+CMSB binary & jamba2-3b & 0.792 & 0.792 & 0.792 & 0.792 \\
+CMSB binary & smollm3-3b & 0.792 & 0.792 & 0.792 & 0.792 \\
+CMSB binary & ministral3-3b & 0.726 & 0.726 & 0.726 & 0.714 \\
+CMSB binary & phi4-mini & 0.762 & 0.762 & 0.762 & 0.762 \\
+CMSB binary & nemotron3-nano-4b & 0.621 & 0.621 & 0.621 & 0.621 \\
+CMSB binary & gemma4-e4b & 0.804 & 0.804 & 0.804 & 0.804 \\
+CMSB binary & glm-edge-4b & 0.711 & 0.711 & 0.711 & 0.711 \\
+CMSB binary & qwen3.5-4b & 0.805 & 0.805 & 0.805 & 0.805 \\
+CMSB binary & falcon-h1-7b & 0.767 & 0.767 & 0.767 & 0.767 \\
+CMSB binary & olmo3-7b & 0.758 & 0.758 & 0.758 & 0.758 \\
+CMSB binary & apertus-8b & 0.769 & 0.769 & 0.769 & 0.769 \\
+CMSB binary & aya-expanse-8b & 0.749 & 0.749 & 0.749 & 0.749 \\
+CMSB binary & granite4.1-8b & 0.821 & 0.821 & 0.821 & 0.821 \\
+CMSB binary & llama3.1-8b & 0.816 & 0.816 & 0.816 & 0.816 \\
+EDOS A & exaone4-1.2b & 0.460 & 0.460 & 0.460 & 0.460 \\
+EDOS A & jamba2-3b & 0.706 & 0.706 & 0.706 & 0.706 \\
+EDOS A & smollm3-3b & 0.696 & 0.696 & 0.696 & 0.696 \\
+EDOS A & ministral3-3b & 0.502 & 0.502 & 0.502 & 0.454 \\
+EDOS A & phi4-mini & 0.667 & 0.667 & 0.667 & 0.667 \\
+EDOS A & nemotron3-nano-4b & 0.505 & 0.505 & 0.505 & 0.505 \\
+EDOS A & gemma4-e4b & 0.712 & 0.712 & 0.712 & 0.712 \\
+EDOS A & glm-edge-4b & 0.549 & 0.549 & 0.549 & 0.549 \\
+EDOS A & qwen3.5-4b & 0.694 & 0.694 & 0.694 & 0.694 \\
+EDOS A & falcon-h1-7b & 0.552 & 0.552 & 0.552 & 0.552 \\
+EDOS A & olmo3-7b & 0.577 & 0.577 & 0.577 & 0.577 \\
+EDOS A & apertus-8b & 0.526 & 0.526 & 0.526 & 0.526 \\
+EDOS A & aya-expanse-8b & 0.480 & 0.480 & 0.480 & 0.480 \\
+EDOS A & granite4.1-8b & 0.609 & 0.609 & 0.609 & 0.608 \\
+EDOS A & llama3.1-8b & 0.661 & 0.661 & 0.661 & 0.661 \\
+EDOS B & exaone4-1.2b & 0.176 & 0.176 & 0.176 & 0.176 \\
+EDOS B & jamba2-3b & 0.195 & 0.195 & 0.195 & 0.195 \\
+EDOS B & smollm3-3b & 0.312 & 0.312 & 0.285 & 0.000 \\
+EDOS B & ministral3-3b & 0.269 & 0.269 & 0.267 & 0.000 \\
+EDOS B & phi4-mini & 0.177 & 0.177 & 0.177 & 0.176 \\
+EDOS B & nemotron3-nano-4b & 0.324 & 0.324 & 0.324 & 0.324 \\
+EDOS B & gemma4-e4b & 0.441 & 0.441 & 0.441 & 0.441 \\
+EDOS B & glm-edge-4b & 0.443 & 0.443 & 0.443 & 0.443 \\
+EDOS B & qwen3.5-4b & 0.355 & 0.355 & 0.355 & 0.355 \\
+EDOS B & falcon-h1-7b & 0.508 & 0.508 & 0.508 & 0.509 \\
+EDOS B & olmo3-7b & 0.378 & 0.378 & 0.378 & 0.378 \\
+EDOS B & apertus-8b & 0.182 & 0.182 & 0.182 & 0.000 \\
+EDOS B & aya-expanse-8b & 0.387 & 0.387 & 0.387 & 0.386 \\
+EDOS B & granite4.1-8b & 0.361 & 0.361 & 0.362 & 0.271 \\
+EDOS B & llama3.1-8b & 0.353 & 0.353 & 0.353 & 0.351 \\
+EDOS C & exaone4-1.2b & 0.043 & 0.043 & 0.043 & 0.043 \\
+EDOS C & jamba2-3b & 0.033 & 0.033 & 0.033 & 0.033 \\
+EDOS C & smollm3-3b & 0.109 & 0.109 & 0.009 & 0.000 \\
+EDOS C & ministral3-3b & 0.062 & 0.062 & 0.049 & 0.000 \\
+EDOS C & phi4-mini & 0.178 & 0.178 & 0.178 & 0.177 \\
+EDOS C & nemotron3-nano-4b & 0.107 & 0.107 & 0.107 & 0.107 \\
+EDOS C & gemma4-e4b & 0.256 & 0.256 & 0.256 & 0.256 \\
+EDOS C & glm-edge-4b & 0.182 & 0.182 & 0.182 & 0.168 \\
+EDOS C & qwen3.5-4b & 0.150 & 0.150 & 0.150 & 0.150 \\
+EDOS C & falcon-h1-7b & 0.253 & 0.253 & 0.253 & 0.253 \\
+EDOS C & olmo3-7b & 0.146 & 0.146 & 0.146 & 0.146 \\
+EDOS C & apertus-8b & 0.082 & 0.082 & 0.082 & 0.000 \\
+EDOS C & aya-expanse-8b & 0.116 & 0.014 & 0.003 & 0.002 \\
+EDOS C & granite4.1-8b & 0.171 & 0.157 & 0.107 & 0.016 \\
+EDOS C & llama3.1-8b & 0.176 & 0.176 & 0.176 & 0.167 \\
+\bottomrule
+\end{tabular}
+\end{table}

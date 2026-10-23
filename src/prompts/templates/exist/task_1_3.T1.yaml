@@ -1,0 +1,48 @@
+version: 1
+# Variant T1 of exist/task_1_3.yaml: rewording 1 of the system and question sentences (docs/12 §3.6); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: EXIST 2025 annotation guidelines (tweets), question 3
+system: You are a careful content moderator who identifies sexism in tweets.
+yes_no: |-
+  Definition of {name}: {definition}
+
+  Tweet: """{text}"""
+
+  Using the definition above, decide whether this tweet falls under the category {name}. Reply with Yes or No only.
+json: |-
+  Label the tweet below. A tweet can belong to several categories or to none. Fields:
+  {fields}
+
+  Tweet: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  IDEOLOGICAL-INEQUALITY:
+    name: ideological discredit, denying inequality and flipped narrative
+    definition: >-
+      Messages that discredit the feminist movement in order to devalue, belittle and
+      defame the struggle of women in all areas. Also messages that reject inequality
+      between men and women, or present men as victims of gender-based oppression.
+  STEREOTYPING-DOMINANCE:
+    name: role stereotyping and dominance
+    definition: >-
+      Messages that express false ideas about women that suggest they are more suitable
+      or inappropriate for certain tasks. Also any claim that implies that men are
+      somehow superior to women.
+  OBJECTIFICATION:
+    name: objectification and physical stereotyping
+    definition: >-
+      Messages where women are presented as objects apart from their dignity and
+      personal aspects. Also messages that assume or describe certain physical qualities
+      that women must have to fulfill traditional gender roles, for example ideas that
+      women should maintain a standard and ideal of beauty, or attacks on a woman's
+      physique.
+  SEXUAL-VIOLENCE:
+    name: sexual violence
+    definition: >-
+      Messages where sexual suggestions, requests for sexual favors or harassment of a
+      sexual nature (rape or sexual assault) are made.
+  MISOGYNY-NON-SEXUAL-VIOLENCE:
+    name: misogyny and non-sexual violence
+    definition: Expressions of hatred and violence towards women.

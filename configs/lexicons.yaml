@@ -1,0 +1,65 @@
+# Fixed word lists for the post-hoc failure analysis and the counterfactual explanation tests.
+# Frozen 2026-10-23 in docs/12-protocol-addendum.md before any analysis that uses them; never edited after scoring.
+# Matching is on lower-cased whole words of text_norm (regex \b...\b). Offensive terms are listed only as analysis keys.
+version: 1
+
+# Words that refer to women or gender (not insults): used for "gender-term present" and the lexicon baseline
+gender_terms: [
+  woman, women, womens, girl, girls, female, females, she, her, hers, herself, wife, wives, mother, mothers,
+  mom, moms, mum, mums, daughter, daughters, sister, sisters, lady, ladies, girlfriend, girlfriends, gf,
+  bride, brides, queen, queens, actress, chick, chicks, gal, gals, feminist, feminists, feminism, mrs, ms,
+]
+
+# Gendered slurs and insults aimed at women
+gendered_slurs: [
+  bitch, bitches, slut, sluts, whore, whores, cunt, cunts, hoe, hoes, skank, skanks, thot, thots, twat, twats,
+  hag, hags, harlot, tramp, floozy, femoid, femoids, foid, foids,
+]
+
+# General profanity (not gender-specific)
+profanity: [fuck, fucking, fucked, fucker, shit, shitty, ass, asshole, bastard, dick, dumbass, damn, crap]
+
+# Gender swap for the counterfactual test, applied in both directions in one pass (no double swaps).
+# Ambiguous forms are fixed here: her -> his (possessive reading), him -> her, his -> her.
+gender_swap:
+  woman: man
+  women: men
+  womens: mens
+  girl: boy
+  girls: boys
+  female: male
+  females: males
+  she: he
+  her: his
+  hers: his
+  herself: himself
+  wife: husband
+  wives: husbands
+  mother: father
+  mothers: fathers
+  mom: dad
+  moms: dads
+  mum: dad
+  daughter: son
+  daughters: sons
+  sister: brother
+  sisters: brothers
+  lady: gentleman
+  ladies: gentlemen
+  girlfriend: boyfriend
+  girlfriends: boyfriends
+  gf: bf
+  bride: groom
+  queen: king
+  actress: actor
+  mrs: mr
+  # Reverse-only entries (their forward partner above already maps the other way)
+  him: her
+  his: her
+
+# First reply token of a non-answer, classed in this order (first match wins); tokens are stripped of spaces
+non_answer_tokens:
+  refusal: [I, "I'm", Sorry, As, Unfortunately, Cannot, cannot]
+  none_of_options: [None, Neither, N/A, NONE]
+  explanation: [The, This, Based, To, In, Here, Let, Given, It, Looking, After, From, That, There, My, Your, Answer]
+  # markup = any token with no letter or digit (e.g. "**", "#", newline); other = everything else

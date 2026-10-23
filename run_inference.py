@@ -5,6 +5,8 @@ Example (Colab: set os.environ["HF_TOKEN"] from userdata first, then `!python ru
 Models come from configs/llms.yaml; --model-id/--model-name/--revision override them for one-off runs.
 --split test is label-blind: predictions only, scored in notebooks/99_final_eval.ipynb.
 Resume an interrupted run by passing the same arguments plus --run-name <existing run>.
+--experiment-dir puts the run folder in {experiment}/runs/ (see src/utils/experiments.py); --sample N is
+the sanity mode: N random posts through the whole pipeline, only into a sample experiment.
 """
 
 from __future__ import annotations
@@ -24,11 +26,12 @@ HF_HOME = Path(os.environ.get("HF_HOME", PROJECT_ROOT / "hf_cache"))
 os.environ["HF_HOME"] = str(HF_HOME)  # must be set before transformers is imported
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.prompts import ChatOptions  # noqa: E402
+from src.prompts import ChatOptions, load_shots, shots_path  # noqa: E402
 from src.schemas import Example, check_against_config, get_schema  # noqa: E402
 from src.utils import (  # noqa: E402
     compute_metrics,
     environment_info,
+    experiment_date,
     get_hf_token,
     load_llm_registry,
     load_predictions,
@@ -37,9 +40,12 @@ from src.utils import (  # noqa: E402
     method_name,
     prepare_run_dir,
     read_done,
+    read_experiment,
     resolve_revision,
+    runs_dir,
     set_seeds,
     sha256_file,
+    variant_tag,
     write_readme,
 )
 
@@ -58,16 +64,47 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--model-id", default=None, help="Hugging Face repo ID (overrides --model)")
     p.add_argument("--model-name", default=None, help="short name for the run name (overrides --model)")
     p.add_argument("--revision", default=None, help="branch, tag or commit (overrides --model)")
-    p.add_argument("--backend", default="logprob", choices=["logprob", "generate"])
+    p.add_argument(
+        "--backend",
+        default="logprob",
+        choices=["logprob", "generate", "text"],
+        help="text: greedy reply + fixed parser",
+    )
+    p.add_argument(
+        "--prompt-variant", default=None, help="frozen template variant, e.g. v2, T1-T4, X (docs/12)"
+    )
+    p.add_argument("--option-perm", type=int, default=None, help="rotate lettered options by k (multiclass)")
     p.add_argument("--thinking", action="store_true", help="Qwen3.5 only; needs --backend generate")
     p.add_argument(
         "--mass-threshold", type=float, default=None, help="soft-refusal cutoff, once frozen on dev"
     )
     p.add_argument("--top-k", type=int, default=10)
     p.add_argument("--max-new-tokens", type=int, default=256)
-    p.add_argument("--limit", type=int, default=None, help="first N examples in file order (smoke tests)")
+    p.add_argument("--limit", type=int, default=None, help="first N examples in file order (debugging)")
+    p.add_argument(
+        "--sample",
+        type=int,
+        default=None,
+        help="sanity mode: N random posts (seed --seed), sample experiments only",
+    )
+    p.add_argument(
+        "--experiment-dir", type=Path, default=None, help="experiment folder; runs go to its runs/"
+    )
+    p.add_argument(
+        "--subset", type=int, default=None, help="N random posts (seed --seed) as a real, scored subset run"
+    )
+    p.add_argument(
+        "--ids-file",
+        type=Path,
+        default=None,
+        help="run only these post ids (one per line), e.g. the XAI sample",
+    )
     p.add_argument("--all-cmsb", action="store_true", help="keep unannotated CMSB 'other' posts")
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--shots", type=int, default=0, help="shots per class from the frozen configs/fewshot file"
+    )
+    p.add_argument("--shot-seed", type=int, default=42, help="selection seed of the frozen shot file")
     p.add_argument("--run-name", default=None, help="existing run to resume; new name if omitted")
     p.add_argument("--log-every", type=int, default=25)
     return p.parse_args()
@@ -78,6 +115,18 @@ def main() -> None:
     if args.thinking and args.backend == "logprob":
         # With thinking on, the first reply token is the thinking block, not the answer
         sys.exit("--thinking needs --backend generate (log-prob scoring reads the first reply token)")
+    if args.shots and args.backend != "logprob":
+        sys.exit("--shots is implemented for --backend logprob only")
+    if args.ids_file and args.subset is not None:
+        sys.exit("--ids-file and --subset are exclusive")
+    if args.option_perm and args.backend == "generate":
+        sys.exit("--option-perm applies to the logprob and text backends")
+    exp_meta = read_experiment(args.experiment_dir) if args.experiment_dir else None
+    # Sample runs and full runs never share an experiment, so a sanity run can't reach evaluation
+    if exp_meta and (args.sample is not None) != (exp_meta["mode"] == "sample"):
+        sys.exit(
+            f"--sample must be given exactly for sample experiments ({exp_meta['experiment']} is {exp_meta['mode']})"
+        )
 
     # Registry entry first, then explicit flags override it
     spec = load_llm_registry(LLM_CONFIG)[args.model] if args.model else None
@@ -92,17 +141,45 @@ def main() -> None:
 
     check_against_config(DATA_CONFIG)
     schema = get_schema(args.dataset, args.task)
+    if args.option_perm and schema.task_type != "multiclass":
+        sys.exit("--option-perm applies to multiclass tasks only")
+    # In a sample experiment --sample sets the draw (a --subset flag only tags the run); with --ids-file the
+    # ids are selected first and the sanity draw is taken from them
+    draw = args.sample if args.sample is not None else args.subset
     df, data_file, filters = load_split(
-        DATA_ROOT, args.dataset, args.split, schema, args.all_cmsb, args.limit
+        DATA_ROOT,
+        args.dataset,
+        args.split,
+        schema,
+        args.all_cmsb,
+        args.limit,
+        None if args.ids_file else draw,
+        args.seed,
     )
+    if args.ids_file:
+        wanted = [line.strip() for line in args.ids_file.read_text().splitlines() if line.strip()]
+        missing = set(wanted) - set(df["id"])
+        if missing:
+            sys.exit(f"{len(missing)} ids in {args.ids_file.name} are not in the evaluated split")
+        df = df[df["id"].isin(wanted)].reset_index(drop=True)
+        filters.append(f"ids from {args.ids_file.name} ({len(df)})")
+        if args.sample is not None:
+            df = (
+                df.sample(n=min(args.sample, len(df)), random_state=args.seed)
+                .sort_index()
+                .reset_index(drop=True)
+            )
+            filters.append(f"random sample of {len(df)} (seed {args.seed})")
 
     token = get_hf_token()
     revision = resolve_revision(model_id, requested_revision, token)
-    method = method_name(args.backend, args.thinking, args.split, args.limit)
-    run_name = args.run_name or make_run_name(
-        f"{datetime.now():%Y%m%d-%H%M}", args.dataset, args.task, model_name, method, args.seed
+    tag = variant_tag(
+        args.prompt_variant, args.option_perm, args.subset, args.ids_file and str(args.ids_file)
     )
-    run_dir = OUTPUT_ROOT / run_name
+    method = method_name(args.backend, args.thinking, args.split, args.limit, args.shots, args.sample, tag)
+    date = experiment_date(args.experiment_dir) if exp_meta else f"{datetime.now():%Y%m%d-%H%M}"
+    run_name = args.run_name or make_run_name(date, args.dataset, args.task, model_name, method, args.seed)
+    run_dir = (runs_dir(args.experiment_dir) if exp_meta else OUTPUT_ROOT) / run_name
     pred_path = run_dir / "predictions.jsonl"
 
     config = {
@@ -110,8 +187,23 @@ def main() -> None:
         **{
             k: v
             for k, v in vars(args).items()
-            if k not in ("run_name", "model_id", "model_name", "revision", "log_every")
+            if k
+            not in (
+                "run_name",
+                "model_id",
+                "model_name",
+                "revision",
+                "log_every",
+                "shots",
+                "shot_seed",
+                "experiment_dir",
+                "ids_file",
+            )
         },
+        # Experiment name, not its path: the path differs between Colab and a local copy
+        "experiment": exp_meta["experiment"] if exp_meta else None,
+        "ids_file": args.ids_file.name if args.ids_file else None,
+        "ids_file_sha256": sha256_file(args.ids_file) if args.ids_file else None,
         "model_id": model_id,
         "model_name": model_name,
         "revision_requested": requested_revision,
@@ -128,6 +220,24 @@ def main() -> None:
         "n_examples": len(df),
         "command": " ".join([Path(sys.argv[0]).name, *sys.argv[1:]]),
     }
+    shots = None
+    if args.shots:
+        # Frozen train shots, same for every model; keys added only here so zero-shot configs don't change
+        shot_file = shots_path(args.dataset, args.task, args.shots, args.shot_seed)
+        if not shot_file.exists():
+            sys.exit(f"{shot_file} not found; freeze it first (notebooks/20_llm_runs.ipynb)")
+        shots = load_shots(shot_file, DATA_ROOT)
+        shot_ids = sorted({s.id for group in shots.values() for s in group})
+        overlap = set(shot_ids) & set(df["id"])
+        if overlap:
+            sys.exit(f"{len(overlap)} shot posts are in the evaluated split")
+        config |= {
+            "shots": args.shots,
+            "shot_seed": args.shot_seed,
+            "shots_file": str(shot_file.relative_to(PROJECT_ROOT)),
+            "shots_sha256": sha256_file(shot_file),
+            "shot_ids": shot_ids,
+        }
     try:
         prepare_run_dir(run_dir, config)
     except (FileExistsError, ValueError) as e:
@@ -148,7 +258,7 @@ def main() -> None:
         trust_remote_code=config["trust_remote_code"],
     )
     (run_dir / "environment.json").write_text(json.dumps(environment_info(PROJECT_ROOT), indent=2))
-    template = PromptTemplate.load(schema)
+    template = PromptTemplate.load(schema, variant=args.prompt_variant)
     generator = JsonGenerator(model, tokenizer, schema) if args.backend == "generate" else None
 
     done = read_done(pred_path)
@@ -172,6 +282,8 @@ def main() -> None:
                 max_new_tokens=args.max_new_tokens,
                 enable_thinking=args.thinking,
                 chat=chat,
+                shots=shots,
+                option_perm=args.option_perm or 0,
             )
             # Flush per line so a disconnect loses at most the example in flight
             f.write(pred.model_dump_json() + "\n")

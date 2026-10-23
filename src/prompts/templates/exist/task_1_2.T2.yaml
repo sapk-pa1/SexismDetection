@@ -1,0 +1,40 @@
+version: 1
+# Variant T2 of exist/task_1_2.yaml: rewording 2 of the system and question sentences (docs/12 §3.6); definitions verbatim
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: EXIST 2025 annotation guidelines (tweets), questions 1-2
+system: You annotate tweets for a study of online sexism.
+options: |-
+  Which one of these options matches the intention behind the tweet below?
+
+  {options}
+
+  Tweet: """{text}"""
+
+  Respond only with the letter of one option.
+json: |-
+  Label the tweet below with exactly one intention. Options:
+  {fields}
+
+  Tweet: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  "NO":  # quoted: bare NO is YAML false
+    name: not sexist
+    definition: >-
+      The tweet is not sexist. Sexism comprises any form of oppression or prejudice
+      against women because of their sex.
+  REPORTED:
+    name: reported
+    definition: >-
+      The intention of the author is to report or describe a sexist situation or event
+      suffered by a woman or women in first or third person.
+  JUDGEMENTAL:
+    name: judgemental
+    definition: >-
+      The intention of the author is to be judgemental, since the tweet describes sexist
+      situations or behaviours with the aim of condemning them.
+  DIRECT:
+    name: direct
+    definition: The intention is to write a message that is sexist by itself.

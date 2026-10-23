@@ -1,0 +1,90 @@
+\paragraph{CMSB binary.} System message: ``You are an expert annotator who labels social media posts for sexism.'' One question per label; answers read from the Yes/No tokens.
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of sexist: A post is sexist if its content and/or its phrasing is sexist. Sexist content prescribes behaviours or qualities that women (and men) are supposed to exhibit to conform to traditional gender roles; describes supposed differences between men and women through explicit comparisons and stereotypes; acknowledges inequalities between men and women but justifies or endorses them; or states that there are no inequalities between men and women (any more) and/or opposes feminism. Sexist phrasing means attacks, foul language or derogatory depictions directed towards individuals because of their sex.
+
+Post: """<post text>"""
+
+Is this post sexist according to the definition? Answer with Yes or No only.\end{quote}
+
+\paragraph{EDOS A.} System message: ``You are an expert annotator who labels social media posts for sexism.'' One question per label; answers read from the Yes/No tokens.
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of sexist: Any abuse, implicit or explicit, that is directed towards women based on their gender, or on the combination of their gender with one or more other identity attributes.
+
+Post: """<post text>"""
+
+Is this post sexist according to the definition? Answer with Yes or No only.\end{quote}
+
+\paragraph{EDOS B.} System message: ``You are an expert annotator who labels social media posts for sexism.'' Answer letters: A = threats, B = derogation, C = animosity, D = prejudiced\_discussions.
+\begin{quote}\footnotesize\ttfamily\raggedright Which category of sexism best describes this post?
+
+A) threats, plans to harm and incitement: Language where an individual expresses intent and/or encourages others to take action against women.\\
+B) derogation: Language which explicitly derogates, dehumanises, demeans or insults women.\\
+C) animosity: Language which expresses implicit or subtle sexism, stereotypes or descriptive statements.\\
+D) prejudiced discussions: Language which denies the existence of discrimination, and justifies sexist treatment.
+
+Post: """<post text>"""
+
+Answer with the letter of one category only.\end{quote}
+
+\paragraph{EDOS C.} System message: ``You are an expert annotator who labels social media posts for sexism.'' Answer letters: A = 1.1, B = 1.2, C = 2.1, D = 2.2, E = 2.3, F = 3.1, G = 3.2, H = 3.3, I = 3.4, J = 4.1, K = 4.2.
+\begin{quote}\footnotesize\ttfamily\raggedright Which fine-grained type of sexism best describes this post?
+
+A) threats of harm: Expressing intent, willingness or desire to harm an individual woman or group of women.\\
+B) incitement and encouragement of harm: Inciting or encouraging an individual, group, or general audience to harm a woman or group of women.\\
+C) descriptive attacks: Characterising or describing women in a derogatory manner.\\
+D) aggressive and emotive attacks: Expressing strong negative sentiment against women, such as disgust or hatred.\\
+E) dehumanising attacks and overt sexual objectification: Derogating women by comparing them to non-human entities such as vermin, disease or refuse, or overtly reducing them to sexual objects.\\
+F) casual use of gendered slurs, profanities and insults: Using gendered slurs, gender-based profanities and insults, but not to intentionally attack women.\\
+G) immutable gender differences and gender stereotypes: Asserting immutable, natural or otherwise essential differences between men and women.\\
+H) backhanded gendered compliments: Ostensibly complimenting women, but actually belittling or implying their inferiority.\\
+I) condescending explanations or unwelcome advice: Offering unsolicited or patronising advice to women on topics and issues they know more about.\\
+J) supporting mistreatment of individual women: Expressing support for mistreatment of women as individuals.\\
+K) supporting systemic discrimination against women as a group: Expressing support for systemic discrimination of women as a group.
+
+Post: """<post text>"""
+
+Answer with the letter of one type only.\end{quote}
+
+\paragraph{EXIST 1.1.} System message: ``You are an expert annotator who labels tweets for sexism.'' One question per label; answers read from the Yes/No tokens.
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of sexist: The tweet is sexist itself, describes a sexist situation or criticizes a sexist behaviour. Sexism comprises any form of oppression or prejudice against women because of their sex, based for example on stereotypes, the belief that men are superior to women, or irrational hatred of women (misogyny). It may sound friendly, funny, offensive, hateful or even violent.
+
+Tweet: """<post text>"""
+
+Is this tweet sexist according to the definition? Answer with Yes or No only.\end{quote}
+
+\paragraph{EXIST 1.2.} System message: ``You are an expert annotator who labels tweets for sexism.'' Answer letters: A = NO, B = REPORTED, C = JUDGEMENTAL, D = DIRECT.
+\begin{quote}\footnotesize\ttfamily\raggedright What is the intention of the person who wrote this tweet?
+
+A) not sexist: The tweet is not sexist. Sexism comprises any form of oppression or prejudice against women because of their sex.\\
+B) reported: The intention of the author is to report or describe a sexist situation or event suffered by a woman or women in first or third person.\\
+C) judgemental: The intention of the author is to be judgemental, since the tweet describes sexist situations or behaviours with the aim of condemning them.\\
+D) direct: The intention is to write a message that is sexist by itself.
+
+Tweet: """<post text>"""
+
+Answer with the letter of one option only.\end{quote}
+
+\paragraph{EXIST 1.3.} System message: ``You are an expert annotator who labels tweets for sexism.'' One question per label; answers read from the Yes/No tokens.
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of ideological discredit, denying inequality and flipped narrative: Messages that discredit the feminist movement in order to devalue, belittle and defame the struggle of women in all areas. Also messages that reject inequality between men and women, or present men as victims of gender-based oppression.
+
+Tweet: """<post text>"""
+
+Does this tweet belong to the category ideological discredit, denying inequality and flipped narrative? Answer with Yes or No only.\end{quote}
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of role stereotyping and dominance: Messages that express false ideas about women that suggest they are more suitable or inappropriate for certain tasks. Also any claim that implies that men are somehow superior to women.
+
+Tweet: """<post text>"""
+
+Does this tweet belong to the category role stereotyping and dominance? Answer with Yes or No only.\end{quote}
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of objectification and physical stereotyping: Messages where women are presented as objects apart from their dignity and personal aspects. Also messages that assume or describe certain physical qualities that women must have to fulfill traditional gender roles, for example ideas that women should maintain a standard and ideal of beauty, or attacks on a woman's physique.
+
+Tweet: """<post text>"""
+
+Does this tweet belong to the category objectification and physical stereotyping? Answer with Yes or No only.\end{quote}
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of sexual violence: Messages where sexual suggestions, requests for sexual favors or harassment of a sexual nature (rape or sexual assault) are made.
+
+Tweet: """<post text>"""
+
+Does this tweet belong to the category sexual violence? Answer with Yes or No only.\end{quote}
+\begin{quote}\footnotesize\ttfamily\raggedright Definition of misogyny and non-sexual violence: Expressions of hatred and violence towards women.
+
+Tweet: """<post text>"""
+
+Does this tweet belong to the category misogyny and non-sexual violence? Answer with Yes or No only.\end{quote}

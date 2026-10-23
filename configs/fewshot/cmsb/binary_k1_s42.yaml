@@ -1,0 +1,21 @@
+dataset: cmsb
+task: binary
+k: 1
+seed: 42
+max_words: 50
+created: '2026-10-23'
+train_file: processed/train/cmsb_train.parquet
+train_sha256: 41bd6f439f4e50c5ce46f44abaceeea7e4a2ff5512820c52b1d75b299276aff4
+filters:
+- no leak_group
+- no dup_group
+- not empty_norm
+- hard label present
+- <= 50 words
+- annotated originals (no of_id)
+shots:
+  sexist:
+  - id: '11126'
+    answer: 'Yes'
+  - id: '7446'
+    answer: 'No'

@@ -1,0 +1,40 @@
+version: 1
+# Variant T4 of edos/task_b.yaml: format variant 2: headed sections, no triple quotes (docs/12 §3.6); wording as v1
+# Frozen with docs/12-protocol-addendum.md; its sha256 is in configs/prompt_variants.lock
+source: Kirk et al. 2023, SemEval-2023 Task 10
+system: You are an expert annotator who labels social media posts for sexism.
+options: |-
+  ### Question
+  Which category of sexism best describes this post?
+
+  ### Options
+  {options}
+
+  ### Post
+  {text}
+
+  ### Answer format
+  Answer with the letter of one category only.
+json: |-
+  Label the post below with exactly one category. Categories:
+  {fields}
+
+  Post: """{text}"""
+
+  Reply with a JSON object only.
+prefill: ""  # grammar starts after the prefill, so it must not contain JSON
+labels:
+  threats:
+    name: threats, plans to harm and incitement
+    definition: >-
+      Language where an individual expresses intent and/or encourages others to take
+      action against women.
+  derogation:
+    name: derogation
+    definition: Language which explicitly derogates, dehumanises, demeans or insults women.
+  animosity:
+    name: animosity
+    definition: Language which expresses implicit or subtle sexism, stereotypes or descriptive statements.
+  prejudiced_discussions:
+    name: prejudiced discussions
+    definition: Language which denies the existence of discrimination, and justifies sexist treatment.

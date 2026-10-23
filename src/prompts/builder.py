@@ -10,9 +10,12 @@ from typing import Any
 
 import yaml
 
+from src.prompts.fewshot import Shot
 from src.schemas.base import OutputSchema
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
+# sha256 of every frozen prompt variant (v2, T1-T4, X); a variant missing here or with another hash is refused
+VARIANT_LOCK = Path(__file__).resolve().parents[2] / "configs" / "prompt_variants.lock"
 OPTION_LETTERS = string.ascii_uppercase
 
 Messages = list[dict[str, str]]
@@ -40,12 +43,27 @@ class PromptTemplate:
     prefill: str
     labels: dict[str, dict[str, str]]  # label -> {name, definition}, in schema order
     sha256: str
+    variant: str = ""  # "" = the frozen v1 file; else e.g. "v2", "T3" (file {task}.{variant}.yaml)
+    logprob_prefill: str = ""  # reply prefix for log-prob scoring, e.g. "Answer: " (v2 only)
 
     @classmethod
-    def load(cls, schema: type[OutputSchema], template_dir: Path = TEMPLATE_DIR) -> PromptTemplate:
-        """Load the template for a schema and check it covers exactly its labels."""
-        path = template_dir / f"{schema.prompt_id()}.yaml"
+    def load(
+        cls,
+        schema: type[OutputSchema],
+        template_dir: Path = TEMPLATE_DIR,
+        variant: str | None = None,
+        lock: Path = VARIANT_LOCK,
+    ) -> PromptTemplate:
+        """Load the template for a schema and check it covers exactly its labels; variants must match the lock."""
+        name = f"{schema.prompt_id()}.{variant}.yaml" if variant else f"{schema.prompt_id()}.yaml"
+        path = template_dir / name
         raw = path.read_bytes()
+        if variant:
+            # Variants are frozen before any run (docs/12 §3.4-3.6); an edited file must not run silently
+            frozen = yaml.safe_load(lock.read_text()) if lock.exists() else {}
+            sha = hashlib.sha256(raw).hexdigest()
+            if (frozen or {}).get(name) != sha:
+                raise ValueError(f"{name} is not frozen in {lock.name} (or was edited after freezing)")
         spec = yaml.safe_load(raw)
         # Keys are quoted in YAML but str() guards against bare numbers like 1.1
         labels = {str(k): v for k, v in spec["labels"].items()}
@@ -57,7 +75,7 @@ class PromptTemplate:
         if schema.task_type == "multiclass" and len(labels) > len(OPTION_LETTERS):
             raise ValueError(f"{path}: more classes than option letters")
         return cls(
-            prompt_id=schema.prompt_id(),
+            prompt_id=f"{schema.prompt_id()}.{variant}" if variant else schema.prompt_id(),
             version=spec["version"],
             source=spec["source"],
             system=spec["system"],
@@ -67,27 +85,47 @@ class PromptTemplate:
             prefill=spec.get("prefill") or "",
             labels=labels,
             sha256=hashlib.sha256(raw).hexdigest(),
+            variant=variant or "",
+            logprob_prefill=spec.get("logprob_prefill") or "",
         )
 
-    def _messages(self, user: str) -> Messages:
-        return [{"role": "system", "content": self.system}, {"role": "user", "content": user}]
+    def _messages(self, user: str, shots: list[tuple[str, str]] = ()) -> Messages:
+        # Few-shot: each shot is a prior user/assistant turn, so the reply still starts with the answer
+        turns = [
+            m for q, a in shots for m in ({"role": "user", "content": q}, {"role": "assistant", "content": a})
+        ]
+        return [{"role": "system", "content": self.system}, *turns, {"role": "user", "content": user}]
 
-    def yes_no_messages(self, text: str, label: str) -> Messages:
-        """One Yes/No question about one label."""
+    def yes_no_messages(self, text: str, label: str, shots: list[Shot] = ()) -> Messages:
+        """One Yes/No question about one label, after any shots for that label."""
         lab = self.labels[label]
-        return self._messages(self.yes_no.format(name=lab["name"], definition=lab["definition"], text=text))
+
+        def ask(t: str) -> str:
+            return self.yes_no.format(name=lab["name"], definition=lab["definition"], text=t)
+
+        return self._messages(ask(text), [(ask(s.text), s.answer) for s in shots])
 
     def option_letters(self) -> list[str]:
         """Answer letters, one per class in schema order."""
         return list(OPTION_LETTERS[: len(self.labels)])
 
-    def option_messages(self, text: str) -> Messages:
-        """One question listing every class as a lettered option."""
+    def option_order(self, perm: int = 0) -> list[str]:
+        """Classes in display order: schema order rotated left by `perm` (letters stay A, B, ...)."""
+        classes = list(self.labels)
+        if not 0 <= perm < len(classes):
+            raise ValueError(f"option perm {perm} outside 0..{len(classes) - 1}")
+        return classes[perm:] + classes[:perm]
+
+    def option_messages(self, text: str, shots: list[Shot] = (), perm: int = 0) -> Messages:
+        """One question listing every class as a lettered option; shot answers become letters."""
+        letters, order = self.option_letters(), self.option_order(perm)
         options = "\n".join(
-            f"{letter}) {lab['name']}: {lab['definition']}"
-            for letter, lab in zip(self.option_letters(), self.labels.values(), strict=True)
+            f"{letter}) {self.labels[c]['name']}: {self.labels[c]['definition']}"
+            for letter, c in zip(letters, order, strict=True)
         )
-        return self._messages(self.options.format(options=options, text=text))
+        letter_of = dict(zip(order, letters, strict=True))
+        turns = [(self.options.format(options=options, text=s.text), letter_of[s.answer]) for s in shots]
+        return self._messages(self.options.format(options=options, text=text), turns)
 
     def json_messages(self, text: str) -> Messages:
         """One request for the whole OutputSchema as JSON."""
